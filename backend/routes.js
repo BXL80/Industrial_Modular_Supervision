@@ -5,7 +5,6 @@ const pool = require('./db');
 
 const { connectToPLC } = require('./plc');
 const { updateConfig, getLastValue } = require('./cron');
-const { getLastValue } = require('./cron');
 
 //const { ExportToCsv } = require('export-to-csv');
 const exportData = async (req, res) => {

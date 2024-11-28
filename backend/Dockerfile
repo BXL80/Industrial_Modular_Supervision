@@ -1,20 +1,20 @@
-# Use an official Node.js runtime as the base image
-FROM node:14-alpine
+# Utiliser une image Node.js officielle
+FROM node:18
 
-# Set the working directory to /app
+# Créer le répertoire de l'application
 WORKDIR /app
 
-# Copy the package.json and package-lock.json files to the container
-COPY package*.json ./
+# Copier les fichiers de dépendances
+COPY ./package*.json ./
 
-# Install any needed packages specified in package.json
+# Installer les dépendances
 RUN npm install
 
-# Copy the rest of the application code to the container
-COPY . .
+# Copier le reste du code de l'application
+COPY . ./
 
-# Make port 8080 available to the world outside this container
-EXPOSE 8080
+# Exposer le port pour le backend
+EXPOSE 5001
 
-# Run the command to start your app when the container launches
+# Lancer l'application
 CMD ["npm", "start"]

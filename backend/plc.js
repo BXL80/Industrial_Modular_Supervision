@@ -1,4 +1,39 @@
+const ModbusRTU = require("modbus-serial");
+const nodes7 = require("nodes7");
 
+const client = new ModbusRTU();
+const s7Client = new nodes7();
+
+// Connexion à un automate Modbus
+const connectModbusPLC = async (ip, port, id) => {
+  try {
+    await client.connectTCP(ip, { port });
+    client.setID(id);
+    console.log(`Connecté à l'automate Modbus ${ip}:${port}`);
+    return client;
+  } catch (err) {
+    console.error("Erreur connexion Modbus:", err.message);
+  }
+};
+
+// Connexion à un automate Siemens via Node7
+const connectSiemensPLC = (config) => {
+  return new Promise((resolve, reject) => {
+    s7Client.initiateConnection(config, (err) => {
+      if (err) {
+        console.error("Erreur connexion Siemens:", err.message);
+        reject(err);
+      } else {
+        console.log("Connecté à l'automate Siemens");
+        resolve(s7Client);
+      }
+    });
+  });
+};
+
+module.exports = { connectModbusPLC, connectSiemensPLC };
+
+/*
 const ModbusRTU = require("modbus-serial");
 const client = new ModbusRTU();
 const clientZ3 = new ModbusRTU();
@@ -33,7 +68,7 @@ setInterval(async function() {
 }, 1000);
 
 */
-
+/*
 //Version Node7
 
 var nodes7 = require('nodes7'); // This is the package name, if the repository is cloned you may need to require 'nodeS7' with uppercase S
@@ -45,7 +80,7 @@ var variables = {
     //TEST1: 'Fanuc_R1_DB.Static.DATA,x_Prog_Running.0',
     //TEST1: 'Bits_Globaux,0.20',
     //TEST1: 'MR4',          // Memory real at MD4
-      TEST2 : 'DB10,DTZ0'  
+      TEST2 : 'DB10,DTZ0'   //Test de date
     //TEST2: 'M32.2',        // Bit at M32.2
       //TEST3: 'M20.0',        // Bit at M20.0
       //TEST4: 'DB1,REAL0.20', // Array of 20 values in DB1
@@ -93,3 +128,4 @@ function valuesWritten(anythingBad) {
   doneWriting = true;
   if (doneReading) { process.exit(); }
 }
+*/

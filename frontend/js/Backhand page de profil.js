@@ -50,3 +50,28 @@ function exporterDonnees() {
   document.body.appendChild(link);
   link.click();
 }
+
+
+//fonction des boutons
+function retour() {
+  // Rediriger vers la page précédente
+  window.history.back();
+}
+
+function next() {
+  // Implémentez ici la logique pour aller à la page suivante
+  // Par exemple, vous pouvez rediriger vers une autre page ou afficher un message de confirmation
+}
+
+function transferer() {
+  // Récupérez les données du formulaire
+  const donnee1 = document.getElementById('donnee1').value;
+  // ... Récupérez les autres données
+
+  const automate = document.getElementById('automate').value;
+
+  // Envoyez les données à l'automate
+  // Ici, vous devrez implémenter la logique pour envoyer les données à l'automate sélectionné
+  // Cela peut impliquer d'utiliser des requêtes HTTP, des protocoles de communication spécifiques, etc.
+  console.log('Envoi des données à l\'automate', automate, ':', donnee1);
+}

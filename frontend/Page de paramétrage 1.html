@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modification des Données et Choix de l'Automate</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>Modification des Données</h1>
+
+<form>
+    <label for="donnee1">Donnée 1:</label>
+    <input type="text" id="donnee1" name="donnee1"><br><br>
+    <label for="automate">Choisir l'automate:</label>
+    <select id="automate">
+        <option value="automate1">Automate 1</option>
+        <option value="automate2">Automate 2</option>
+        </select><br><br>
+
+    <button type="button" onclick="retour()">Retour</button>
+    <button type="button" onclick="next()">Suivant</button>
+    <button type="button" onclick="transferer()">Transférer</button>
+</form>
+
+<script src="script.js"></script>
+</body>
+</html>

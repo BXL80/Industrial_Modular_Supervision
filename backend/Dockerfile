@@ -9,6 +9,8 @@ COPY ./package*.json ./
 
 # Installer les dépendances
 RUN npm install
+# Installer nodemon pour être certain de l'avoir
+#RUN npm install -g nodemon
 
 # Copier le reste du code de l'application
 COPY . ./
@@ -18,3 +20,5 @@ EXPOSE 5001
 
 # Lancer l'application
 CMD ["npm", "start"]
+#nodemon pour relance auto après modification
+#CMD ["nodemon", "start"]

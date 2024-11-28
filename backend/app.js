@@ -2,8 +2,7 @@ const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
 const routes = require('./routes');
-const cronJobs = require('./cron');
-const startCron = require('./cron');
+//const startCron = require('./cron');
 
 dotenv.config();
 const app = express();
@@ -12,7 +11,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/api', routes);
 
-startCron();
+//startCron();
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
@@ -30,7 +29,10 @@ app.use((req, res) => {
   // Middleware pour analyser les requêtes JSON
 app.use(express.json());
 
-// Servir les fichiers statiques (CSS, JS, images) depuis le dossier FrontEnd
+// Connecter les routes
+app.use('/api', routes);
+
+// Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Utilisation des routes définies

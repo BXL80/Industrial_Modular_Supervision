@@ -4,11 +4,14 @@ FROM node:14-alpine
 # Set the working directory to /app
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /backend
+# Copy the package.json and package-lock.json files to the container
+COPY package*.json ./
 
 # Install any needed packages specified in package.json
 RUN npm install
+
+# Copy the rest of the application code to the container
+COPY . .
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080

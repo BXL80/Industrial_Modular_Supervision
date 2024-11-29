@@ -1,29 +1,51 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modification des Données et Choix de l'Automate</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modification des Données et Choix de l'Automate</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T384r9gK2+I0nQnE71uJQV+Orh4swJ8fTeL0fbWmtr0tL/t0Gm7+Np3LHw58V+n5" crossorigin="anonymous">
 </head>
 <body>
+  <div class="container d-flex justify-content-center">
+    <div class="card">
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Donnée</th>
+              <th scope="col">Consigne Min</th>
+              <th scope="col">Consigne Max</th>  <th scope="col">Automate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Donnée 1</td>
+              <td>
+                <input type="text" class="form-control" id="consigneMin1" name="consigneMin1">
+              </td>
+              <td>
+                <input type="text" class="form-control" id="consigneMax1" name="consigneMax1">
+              </td>
+              <td>
+                <select id="automate1" class="form-select">
+                  <option value="automate1_1">Automate 1.1</option>
+                  <option value="automate1_2">Automate 1.2</option>
+                </select>
+              </td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+    </div>
 
-<h1>Modification des Données</h1>
+    <div class="d-flex justify-content-end mt-4">
+      <button type="button" class="btn btn-secondary">Retour</button>
+      <button type="button" class="btn btn-primary">Suivant</button>
+      <button type="button" class="btn btn-success">Transférer</button>
+    </div>
+  </div>
 
-<form>
-    <label for="donnee1">Donnée 1:</label>
-    <input type="text" id="donnee1" name="donnee1"><br><br>
-    <label for="automate">Choisir l'automate:</label>
-    <select id="automate">
-        <option value="automate1">Automate 1</option>
-        <option value="automate2">Automate 2</option>
-        </select><br><br>
-
-    <button type="button" onclick="retour()">Retour</button>
-    <button type="button" onclick="next()">Suivant</button>
-    <button type="button" onclick="transferer()">Transférer</button>
-</form>
-
-<script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C8y/jCYs4sTMX3/las3Iqlp8DOkna/3l0VhvPQ0INqM7+tQG+60R7" crossorigin="anonymous"></script>
 </body>
 </html>

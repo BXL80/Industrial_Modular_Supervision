@@ -52,19 +52,19 @@ router.get('/profil', (req, res) => {
 
 
 // Tester la connexion au PLC
-router.get('/test-plc', (req, res) => {
+router.get('/test-plc', async (req, res) => {
+  const ModbusRTU = require("modbus-serial");
+  const client = new ModbusRTU();//DFF
+  console.log("Dans la route /test-plc");  
+  // open connection to a tcp line API 2.4Ghz ou 5Ghz Happywifi
+  client.connectTCP("172.16.1.24", { port: 502 }); //IP Z4 et port 502 OK
+  client.setID(1); // Remplacez l'ID par celui de votre automate si nécessaire
+  console.log("Connexion à Z4");  
   try {
-    const port = connectToPLC();
-    port.on('open', () => {
-      res.json({ success: true, message: 'Connexion PLC réussie!' });
-      port.close();
-    });
-
-    port.on('error', (err) => {
-      res.json({ success: false, message: `Erreur: ${err.message}` });
-    });
+    const dataZ4Coils = await client.readCoils(514, 1);  //readCoils 514,1 = premier AU
+    console.log("Z4 coils values:", dataZ4Coils.data);  
   } catch (err) {
-    res.json({ success: false, message: `Erreur: ${err.message}` });
+    console.error("Error reading :", err.message);
   }
 });
 
@@ -97,8 +97,57 @@ router.get('/api/last-value', (req, res) => {
   }
 });
 
+
+
+
+
+const ModbusRTU = require('modbus-serial');
+
+router.get('/api/modbus-read', async (req, res) => {
+  //const { ip, register, size} = req.body;
+  ip = "172.16.1.24";
+  register = 514;
+  size = 1;
+
+  const client = new ModbusRTU();
+
+  try {
+    // Connexion à l'automate
+    await client.connectTCP(ip, { port: 502 });
+    client.setID(1);
+
+    let data;
+
+    const dataZ4Coils = await client.readCoils(514, 1);  //readCoils 514,1 = premier AU
+    console.log("Z4 coils values:", dataZ4Coils.data);
+
+    // Envoyer la réponse au client
+    res.json({
+      success: true,
+      data: data.data,
+      message: `Données lues avec succès à partir de l'adresse ${register}.`,
+    });
+
+    // Fermeture de la connexion
+    client.close();
+  } catch (err) {
+    console.error('Erreur Modbus :', err.message);
+    res.status(500).json({ error: `Erreur lors de la lecture : ${err.message}` });
+  }
+});
+
+
+
+
+
+
+
 router.post('/api/read-register', async (req, res) => {
   const { ip, protocol, register, size, type } = req.body;
+
+  console.log('testtt')
+
+  res.send('test')
 
   try {
       if (protocol === 'ModbusTCP') {
@@ -109,6 +158,7 @@ router.post('/api/read-register', async (req, res) => {
           let data;
           if (type === 'HoldingRegister') {
               data = await client.readHoldingRegisters(parseInt(register), parseInt(size));
+              res.send(data)
           } else if (type === 'Coils') {
               data = await client.readCoils(parseInt(register), parseInt(size));
           }

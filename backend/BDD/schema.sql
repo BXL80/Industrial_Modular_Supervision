@@ -7,3 +7,10 @@ CREATE TABLE IF NOT EXISTS plc_data (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     value FLOAT
 );
+
+CREATE OR REPLACE TABLE Utilisateur(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100),
+    prenom VARCHAR(100),
+    poste VARCHAR(100)
+);

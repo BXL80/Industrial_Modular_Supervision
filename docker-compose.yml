@@ -1,19 +1,16 @@
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: ./backend
     ports:
-      - "5001:5001"
+      - "5001:5001"  # Le port est exposé pour permettre l'accès depuis l'extérieur du conteneur
     volumes:
-      - ./backend:/app:cached
-      - /app/node_modules
+      - ./backend:/app
     env_file:
       - .env
     depends_on:
       - db
-    networks:
-      - hackathon_network
+    network_mode: "host"
+    
 
   frontend:
     image: nginx:latest
@@ -22,7 +19,7 @@ services:
     volumes:
       - ./frontend:/usr/share/nginx/html
       - ./frontend/js:/usr/share/nginx/html/js
-      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf # Monte nginx.conf dans le conteneur
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
       - hackathon_network
 
@@ -32,7 +29,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: hackathon
     ports:
-      - "3307:3306" #Je lis le port 3306 mais j'expose le 3307
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:

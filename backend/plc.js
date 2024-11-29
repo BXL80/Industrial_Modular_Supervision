@@ -4,6 +4,8 @@ const nodes7 = require("nodes7");
 const client = new ModbusRTU();
 const s7Client = new nodes7();
 
+console.log("On est dans le plc.js")
+
 // Connexion à un automate Modbus
 const connectModbusPLC = async (ip, port, id) => {
   try {

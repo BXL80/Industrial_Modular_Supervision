@@ -7,8 +7,6 @@ const routes = require('./routes');
 dotenv.config();
 const app = express();
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/api', routes);
 
 //startCron();
@@ -26,14 +24,10 @@ app.use((req, res) => {
     res.status(404).send('Page non trouvée'); //Si page n'existe pas / plus
 });
   
-  // Middleware pour analyser les requêtes JSON
-app.use(express.json());
 
 // Connecter les routes
 app.use('/api', routes);
 
-// Servir les fichiers statiques
-app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Utilisation des routes définies
 app.use('/', routes);

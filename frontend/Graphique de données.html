@@ -1,44 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Graphique d'évolution</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <title>Graphique d'évolution</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <style>
+    /* Add some basic styling for a cleaner presentation */
+    body {
+      font-family: sans-serif; /* Choose a nice, readable font */
+      margin: 2rem; /* Add some margin for better spacing */
+    }
+    #myChart {
+      width: 800px; /* Adjust chart width as needed */
+      height: 400px; /* Adjust chart height as needed */
+      margin: 0 auto; /* Center the chart horizontally */
+    }
+    .chart-container { /* Optional container for better layout */
+      text-align: center; /* Center chart title and button */
+    }
+    button {
+      margin-top: 1rem; /* Add some space between chart and button */
+    }
+  </style>
 </head>
 <body>
-    <canvas id="myChart"></canvas>
-    <button onclick="retour()">Retour</button>
+  <div class="chart-container"> <h2>Graphique d'évolution</h2> <canvas id="myChart"></canvas>
+  </div>
+  <button onclick="retour()">Retour</button>
 
-    <script>
-        // Données (à remplacer par vos propres données)
-        var data = {
-            labels: ['Janvier', 'Février', 'Mars', 'Avril'],
-            datasets: [{
-                label: 'Mes données',
-                data: [12, 19, 3, 5],
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }]
-        };
+  <script>
+    // Données (à remplacer par vos propres données)
+    var data = {
+      labels: ['Janvier', 'Février', 'Mars', 'Avril'],
+      datasets: [{
+        label: 'Mes données',
+        data: [12, 19, 3, 5],
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }]
+    };
 
-        // Créer le graphique
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var myChart = new Chart(ctx, {
-            type: 'line',
-            data: data,
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        function retour() {
-            history.back();
+    // Créer le graphique
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+      type: 'line',
+      data: data,
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
         }
-    </script>
+      }
+    });
+
+    function retour() {
+      history.back();
+    }
+  </script>
 </body>
 </html>

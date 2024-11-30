@@ -7,6 +7,11 @@ const routes = require('./routes');
 dotenv.config();
 const app = express();
 
+
+// Middleware pour traiter les données JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use('/api', routes);
 
 //startCron();
@@ -23,11 +28,17 @@ app.get('/', (req, res) => {
 app.use((req, res) => {
     res.status(404).send('Page non trouvée'); //Si page n'existe pas / plus
 });
-  
-
-// Connecter les routes
-app.use('/api', routes);
-
 
 // Utilisation des routes définies
 app.use('/', routes);
+
+process.on('uncaughtException', (err) => {
+    console.error('Erreur non capturée :', err.message);
+    // Continuez à exécuter le serveur après avoir loggé l'erreur
+  });
+  
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Rejet de promesse non géré :', reason);
+    // Loggez l'erreur pour diagnostic
+  });
+  

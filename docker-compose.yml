@@ -2,18 +2,18 @@ services:
   backend:
     build: ./backend
     ports:
-      - "5001:5001"  # Le port est exposé pour permettre l'accès depuis l'extérieur du conteneur
+      - "5001:5001"
     volumes:
       - ./backend:/app
     env_file:
       - .env
     depends_on:
       - db
-    network_mode: "host"
-    
+    networks:
+      - hackathon_network
 
   frontend:
-    image: nginx:latest
+    image: nginx:1.27.3
     ports:
       - "8080:80"
     volumes:
@@ -24,7 +24,7 @@ services:
       - hackathon_network
 
   db:
-    image: mariadb:latest
+    image: mariadb:11.6.2
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: hackathon

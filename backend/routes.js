@@ -19,52 +19,63 @@ const exportData = async (req, res) => {
 };
 
 
-//Ajout des pages accéssible via URL
-// Route pour la page principale (index)
-router.get('/index', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+router.get('/test-database', async (req, res) => {
+  let conn;
+  try {
+    // Testez ici la connexion à votre base de données
+    res.json({ success: true, message: 'Base de données connectée' });
+  } catch (err) {
+    console.error("Erreur de connexion à la base de données :", err.message);
+    res.status(500).json({ error: `Erreur : ${err.message}` });
+  } finally {
+    if (conn) conn.release(); // Libérez la connexion
+  }
 });
 
-// Route pour la page des graphiques
-router.get('/graphique', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/Graphique de données.html'));
+// Exemple de route frontend
+router.get('/test-frontend', (req, res) => {
+  res.json({ success: true, message: 'Frontend accessible' });
 });
 
-// Route pour la page des données
-router.get('/donnees', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/Page de données.html'));
-});
-
-// Route pour la page de paramétrage 1
-router.get('/parametrage1', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/Page de paramétrage 1.html'));
-});
-
-// Route pour la page de paramétrage 2 (automates)
-router.get('/parametrage2', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/Page de paramétrage 2 (automates).html'));
-});
-
-// Route pour la page profil
-router.get('/profil', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/Page profil.html'));
+// Ajout de la route /ping pour backend
+router.get('/ping', (req, res) => {
+  try {
+    res.json({ success: true, message: 'Backend opérationnel' });
+  } catch (err) {
+    res.status(500).json({ error: `Erreur : ${err.message}` });
+  }
 });
 
 
 // Tester la connexion au PLC
 router.get('/test-plc', async (req, res) => {
-  const ModbusRTU = require("modbus-serial");
-  const client = new ModbusRTU();//DFF
-  console.log("Dans la route /test-plc");  
-  // open connection to a tcp line API 2.4Ghz ou 5Ghz Happywifi
-  client.connectTCP("172.16.1.24", { port: 502 }); //IP Z4 et port 502 OK
-  client.setID(1); // Remplacez l'ID par celui de votre automate si nécessaire
-  console.log("Connexion à Z4");  
+  const client = new ModbusRTU();
+
   try {
-    const dataZ4Coils = await client.readCoils(514, 1);  //readCoils 514,1 = premier AU
-    console.log("Z4 coils values:", dataZ4Coils.data);  
+    console.log("Dans la route /test-plc");
+    console.log("Connexion à Z4");
+
+    // Connexion au PLC
+    await client.connectTCP("172.16.1.24", { port: 502 });
+    client.setID(1);
+
+    // Lecture des données
+    const data = await client.readCoils(514, 1);
+    console.log("Z4 coils values:", data.data);
+
+    // Envoi de la réponse au client
+    res.json({ success: true, data: data.data });
+
+    // Fermeture de la connexion
+    client.close();
   } catch (err) {
-    console.error("Error reading :", err.message);
+    console.error("Erreur de connexion ou de lecture :", err.message);
+
+    // Répondre avec un message d'erreur
+    res.status(500).json({ success: false, error: `Erreur : ${err.message}` });
+  } finally {
+    // Assurez-vous de fermer la connexion, même en cas d'erreur
+    if (client.isOpen) client.close();
   }
 });
 

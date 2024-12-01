@@ -109,9 +109,6 @@ router.get('/api/last-value', (req, res) => {
 });
 
 
-
-
-
 const ModbusRTU = require('modbus-serial');
 
 router.get('/api/modbus-read', async (req, res) => {
@@ -199,6 +196,55 @@ router.post('/api/read-register', async (req, res) => {
   }
 });
 
+
+router.get('/utilisateurs', async (req, res) => {
+  try {
+      const conn = await pool.getConnection();
+      const rows = await conn.query('SELECT * FROM Utilisateurs');
+      conn.release();
+      res.json(rows);
+  } catch (error) {
+      console.error('Erreur lors de la récupération des utilisateurs:', error);
+      res.status(500).send('Erreur serveur');
+  }
+});
+
+//Route pour ajouter un nouvel utilisateur (POST /utilisateurs)
+router.post('/utilisateurs', async (req, res) => {
+  try {
+      const { nom, prenom } = req.body;
+
+      if (!nom || !prenom) {
+          console.error('Erreur pas de nom ou prenom');
+          return res.status(400).send('Nom et prénom sont requis');
+      }
+
+      const conn = await pool.getConnection();
+
+      // Insertion de l'utilisateur dans la base de données
+      const result = await conn.query('INSERT INTO Utilisateurs (nom, prenom) VALUES (?, ?)', [nom, prenom]);
+      
+      // Récupération du nouvel utilisateur ajouté
+      const [NouvelUtilisateur] = await conn.query('SELECT * FROM Utilisateurs WHERE id = ?', [result.insertId]);
+
+      // Si l'utilisateur est trouvé
+      if (NouvelUtilisateur) {
+          // Conversion de BigInt en Number pour l'ID
+          NouvelUtilisateur.id = Number(NouvelUtilisateur.id);
+
+          conn.release();
+
+          // Renvoyer l'utilisateur ajouté
+          res.json(NouvelUtilisateur);
+      } else {
+          conn.release();
+          res.status(404).send('Utilisateur non trouvé après insertion.');
+      }
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+      res.status(500).send('Erreur serveur');
+  }
+});
 
 // Route pour mettre à jour la configuration du cron
 router.post('/api/configure-plc', (req, res) => {

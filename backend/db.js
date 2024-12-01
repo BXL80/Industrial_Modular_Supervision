@@ -9,4 +9,14 @@ const pool = mariadb.createPool({
   connectionLimit: 5 // Limitez le nombre de connexions simultanées
 });
 
+pool.getConnection()
+    .then(conn => {
+        console.log('Connexion à MariaDB réussie');
+        conn.release();
+    })
+    .catch(err => {
+        console.error('Erreur de connexion à MariaDB:', err);
+    });
+
+
 module.exports = pool;

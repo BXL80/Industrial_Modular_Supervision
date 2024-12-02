@@ -124,8 +124,6 @@ router.get('/api/modbus-read', async (req, res) => {
     await client.connectTCP(ip, { port: 502 });
     client.setID(1);
 
-    let data;
-
     const dataZ4Coils = await client.readCoils(514, 1);  //readCoils 514,1 = premier AU
     console.log("Z4 coils values:", dataZ4Coils.data);
 
@@ -212,9 +210,9 @@ router.get('/utilisateurs', async (req, res) => {
 //Route pour ajouter un nouvel utilisateur (POST /utilisateurs)
 router.post('/utilisateurs', async (req, res) => {
   try {
-      const { nom, prenom } = req.body;
+      const { nom, prenom, email, posteSelect } = req.body;
 
-      if (!nom || !prenom) {
+      if (!nom || !prenom || !email ||! posteSelect) {
           console.error('Erreur pas de nom ou prenom');
           return res.status(400).send('Nom et prénom sont requis');
       }
@@ -222,7 +220,7 @@ router.post('/utilisateurs', async (req, res) => {
       const conn = await pool.getConnection();
 
       // Insertion de l'utilisateur dans la base de données
-      const result = await conn.query('INSERT INTO Utilisateurs (nom, prenom) VALUES (?, ?)', [nom, prenom]);
+      const result = await conn.query('INSERT INTO Utilisateurs (nom, prenom, email, posteSelect) VALUES (?, ?, ?, ?)', [nom, prenom, email, posteSelect]);
       
       // Récupération du nouvel utilisateur ajouté
       const [NouvelUtilisateur] = await conn.query('SELECT * FROM Utilisateurs WHERE id = ?', [result.insertId]);
@@ -245,6 +243,58 @@ router.post('/utilisateurs', async (req, res) => {
       res.status(500).send('Erreur serveur');
   }
 });
+
+router.get('/postes', async (req, res) => {
+  console.log("router poste");
+  try {
+    const conn = await pool.getConnection();
+    const postes = await conn.query('SELECT id, poste FROM Poste');
+    conn.release();
+    res.json(postes);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des postes:', error);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+
+//Renvoie liste utilisateurs dans page de connexion
+router.get('/utilisateurs/liste', async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const utilisateurs = await conn.query('SELECT id, nom, prenom FROM Utilisateurs');
+    conn.release();
+    res.json(utilisateurs);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des utilisateurs:', error);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+//Route de connexion
+router.post('/connexion', async (req, res) => {
+  try {
+    const { utilisateurId } = req.body;
+
+    const conn = await pool.getConnection();
+    const [utilisateur] = await conn.query('SELECT * FROM Utilisateurs WHERE id = ?', [utilisateurId]);
+    conn.release();
+
+    if (!utilisateur) {
+      return res.status(404).send('Utilisateur non trouvé');
+    }
+
+    // Simulez une session utilisateur ici (exemple avec JWT ou session)
+    req.session.user = { id: utilisateur.id, nom: utilisateur.nom, prenom: utilisateur.prenom };
+
+    res.status(200).send('Connexion réussie');
+  } catch (error) {
+    console.error('Erreur lors de la connexion:', error);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+
 
 // Route pour mettre à jour la configuration du cron
 router.post('/api/configure-plc', (req, res) => {

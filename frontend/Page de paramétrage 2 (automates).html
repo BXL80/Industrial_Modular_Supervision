@@ -7,12 +7,13 @@
   <link rel="stylesheet" href="css/styleAutomate.css">
   <link rel="icon" href="img/logo.jpg" />
   <script src="js/Nouvelle ligne automate.js" defer></script>
+  <script src="js/Envoie IP auto.js" defer></script>
 </head>
 <body>
 
   <h1 class="text-center">Paramétrage des Automates</h1>
 
-  <form class="container">
+  <form class="container" id="automateForm">
     <table class="table table-bordered">
       <thead>
         <tr>
@@ -29,12 +30,13 @@
           <td>Automate 2</td>
           <td><input type="text" id="ip2" name="ip2" class="form-control"></td>
         </tr>
-        </tbody>
+      </tbody>
     </table>
 
     <div class="text-center mt-3">
       <button type="button" onclick="retour()" class="btn btn-secondary">Retour</button>
       <button type="button" id="addAutomate" class="btn btn-primary">Ajouter Automate</button>
+      <button type="submit" class="btn btn-success">Valider</button>
     </div>
   </form>
 

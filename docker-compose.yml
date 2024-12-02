@@ -5,6 +5,7 @@ services:
       - "5001:5001"
     volumes:
       - ./backend:/app
+      - /app/node_modules #Ajout des dépendances par dessus
     env_file:
       - .env
     depends_on:

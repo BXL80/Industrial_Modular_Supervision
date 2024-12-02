@@ -15,19 +15,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Charger la liste des utilisateurs
     const utilisateurSelect = document.getElementById("utilisateurSelect");
-    if (utilisateurSelect) {
-        fetch('/utilisateurs/liste')
-            .then((response) => response.json())
-            .then((utilisateurs) => {
-                utilisateurs.forEach((utilisateur) => {
-                    const option = document.createElement("option");
-                    option.value = utilisateur.id;
-                    option.textContent = `${utilisateur.prenom.toUpperCase()} ${utilisateur.nom.toUpperCase()}`;
-                    utilisateurSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Erreur lors de la récupération des utilisateurs:', error));
+
+    // Vérifiez que l'élément utilisateurSelect existe
+    if (!utilisateurSelect) {
+        console.error("Élément utilisateurSelect introuvable !");
+        return;
     }
+
+    // Charger les utilisateurs depuis le backend
+    fetch('http://localhost:5001/utilisateurs/liste')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP : ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(utilisateurs => {
+            // Parcourir les utilisateurs et les insérer dans le menu déroulant
+            utilisateurs.forEach(utilisateur => {
+                const option = document.createElement("option");
+                option.value = utilisateur.id; // Utilisé pour identifier l'utilisateur dans le formulaire
+                option.textContent = utilisateur.nomComplet; // Texte visible dans le menu déroulant
+                utilisateurSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Erreur lors de la récupération des utilisateurs :', error));
+
+        const loginForm = document.getElementById("loginForm");
+        loginForm.addEventListener("submit", (event) => {
+            event.preventDefault(); // Empêche le rechargement de la page
+        
+            const utilisateurId = document.getElementById("utilisateurSelect").value;
+        
+            if (!utilisateurId) {
+                alert("Veuillez sélectionner un utilisateur.");
+                return;
+            }
+        
+            // Envoyer l'ID sélectionné au backend
+            fetch('/connexion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ utilisateurId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Connexion réussie !");
+                    window.location.href = '/dashboard'; // Redirection après connexion
+                } else {
+                    alert("Erreur de connexion.");
+                }
+            })
+            .catch(error => console.error('Erreur lors de la connexion :', error));
+        });
+        
 
     // Recup Postes
     const posteSelect = document.getElementById("posteSelect");

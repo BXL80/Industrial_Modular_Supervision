@@ -18,15 +18,18 @@
   <div id="container" class="w-100 max-w-400">
 
       <!-- Formulaire de connexion utilisateur -->
-      <form id="loginForm" class="border rounded p-4 bg-white shadow mb-4">
-        <h1 class="text-center mb-4">Choix de l'utilisateur</h1>
+<form id="loginForm" class="border rounded p-4 bg-white shadow mb-4">
+    <h1 class="text-center mb-4">Choix de l'utilisateur</h1>
 
-        <select id="utilisateurSelect" class="form-select mb-3" aria-label="Default select example" name="utilisateur_id">
-            <option value="" disabled selected>Choisir un utilisateur</option>
-        </select>
+    <!-- Liste déroulante des utilisateurs -->
+    <select id="utilisateurSelect" class="form-select mb-3" aria-label="Default select example" name="utilisateur_id" required>
+        <option value="" disabled selected>Choisir un utilisateur</option>
+    </select>
 
-        <input type="submit" id='submit' class="btn btn-success w-100" value='CONNEXION'>
-    </form>
+    <!-- Bouton de soumission -->
+    <button type="submit" id="submit" class="btn btn-success w-100">CONNEXION</button>
+</form>
+
 
     <!-- Formulaire d'ajout d'un nouvel utilisateur -->
     <form id="addUserForm" class="border rounded p-4 bg-white shadow">

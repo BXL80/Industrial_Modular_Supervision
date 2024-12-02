@@ -279,11 +279,11 @@ router.get('/postes', async (req, res) => {
 });
 
 
-//Renvoie liste utilisateurs dans page de connexion
+//Renvoie liste utilisateurs sous forme NOM.Prenom dans page de connexion
 router.get('/utilisateurs/liste', async (req, res) => {
   try {
     const conn = await pool.getConnection();
-    const utilisateurs = await conn.query('SELECT id, nom, prenom FROM Utilisateurs');
+    const utilisateurs = await conn.query('SELECT id, CONCAT(UPPER(nom), ".", prenom) AS nomComplet FROM Utilisateurs');
     conn.release();
     res.json(utilisateurs);
   } catch (error) {
@@ -291,6 +291,8 @@ router.get('/utilisateurs/liste', async (req, res) => {
     res.status(500).send('Erreur serveur');
   }
 });
+
+
 
 //Route de connexion
 router.post('/connexion', async (req, res) => {

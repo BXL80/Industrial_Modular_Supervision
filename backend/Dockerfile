@@ -8,7 +8,7 @@ WORKDIR /app
 COPY ./package*.json ./
 
 # Installer les dépendances
-#RUN npm install
+RUN npm install
 # Installer nodemon pour être certain de l'avoir
 RUN npm install -g nodemon
 

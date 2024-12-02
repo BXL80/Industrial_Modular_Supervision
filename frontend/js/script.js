@@ -23,25 +23,76 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //Charger la liste des utilisateurs
 document.addEventListener('DOMContentLoaded', function () {
-    fetch('http://localhost:5001/utilisateurs')
-        .then(response => response.json())
-        .then(utilisateurs => {
-            const utilisateurSelect = document.getElementById('utilisateurSelect');
-            if (!utilisateurSelect) {
-                //console.log('L\'élément utilisateurSelect est introuvable dans le DOM.');
-                return;
-            }
-            utilisateurs.forEach(utilisateur => {
-                const option = document.createElement('option');
-                option.value = utilisateur.id;
-                option.textContent = `${utilisateur.prenom.toUpperCase()} ${utilisateur.nom.toUpperCase()}`; //Conversion en majuscule
-                utilisateurSelect.appendChild(option);
-            });
-        })
+    const utilisateurSelect = document.getElementById("utilisateurSelect");
+
+  // Récupération des utilisateurs
+  fetch('/utilisateurs/liste')
+    .then((response) => response.json())
+    .then((utilisateurs) => {
+        utilisateurs.forEach((utilisateur) => {
+        const option = document.createElement("option");
+        option.value = utilisateur.id;
+        option.textContent = `${utilisateur.prenom.toUpperCase()} ${utilisateur.nom.toUpperCase()}`; //Conversion en majuscule
+        utilisateurSelect.appendChild(option);
+        });
+    })
         .catch(error => {
             console.error('Erreur lors de la récupération des opérateurs:', error);
         });
 });
+
+const loginForm = document.getElementById("loginForm");
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const utilisateurId = document.getElementById("utilisateurSelect").value;
+  if (!utilisateurId) {
+    alert("Veuillez sélectionner un utilisateur.");
+    return;
+  }
+
+  fetch('/connexion', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ utilisateurId })
+  })
+    .then((response) => {
+      if (response.ok) {
+        window.location.href = '/dashboard'; // Redirection après connexion
+      } else {
+        alert("Erreur de connexion.");
+      }
+    })
+    .catch((error) => console.error('Erreur lors de la connexion:', error));
+});
+
+
+//Recup Postes
+document.addEventListener("DOMContentLoaded", () => {
+    const posteSelect = document.getElementById("posteSelect");
+
+    // Récupération des postes
+    fetch('http://localhost:5001/postes')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP : ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((postes) => {
+        postes.forEach((poste) => {
+          const option = document.createElement("option");
+          option.value = poste.id;
+          option.textContent = poste.poste;
+          posteSelect.appendChild(option);
+        });
+      })
+      .catch((error) => console.error('Erreur lors du chargement des postes:', error));
+});
+
+  
 
 //Ajout de nouveaux opérateurs
 document.addEventListener('DOMContentLoaded', function () {

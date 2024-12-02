@@ -41,13 +41,5 @@ body {
   
   /* Button Styles */
   .btn-danger {
-    background-color: #dc3545; /* Red button color */
-    border-color: #dc3545; /* Red button border */
     padding: 10px 20px; /* Adjust button padding */
-  }
-  
-  /* Hover Effect for Button (Optional) */
-  .btn-danger:hover {
-    background-color: #c82333; /* Darker red on hover */
-    border-color: #c82333; /* Darker red border on hover */
   }

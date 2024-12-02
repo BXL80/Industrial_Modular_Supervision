@@ -33,18 +33,3 @@ body {
     border-radius: 5px;
     padding: 10px 20px;
   }
-  
-  .btn-primary {
-    background-color: #007bff;
-    border: none;
-  }
-  
-  .btn-secondary {
-    background-color: #6c757d;
-    border: none;
-  }
-  
-  .btn-success {
-    background-color: #28a745;
-    border: none;
-  }

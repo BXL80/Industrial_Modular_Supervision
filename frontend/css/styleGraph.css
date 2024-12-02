@@ -23,15 +23,9 @@ body {
   
   /* Bouton */
   button {
-    background-color: #4CAF50; /* Vert */
-    color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  }
-  
-  button:hover {
-    background-color: #3e8e41;
   }

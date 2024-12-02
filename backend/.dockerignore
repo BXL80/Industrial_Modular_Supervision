@@ -34,3 +34,8 @@ node_modules
 **/values.dev.yaml
 LICENSE
 README.md
+
+# Exceptions pour les fichiers nécessaires
+!package.json
+!package-lock.json
+!Dockerfile

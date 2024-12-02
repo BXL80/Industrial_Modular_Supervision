@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Graphique d'évolution</title>
+  <title>Graphique d'Evolution</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <link rel="stylesheet" href="css/styleGraph.css">
@@ -26,16 +26,16 @@
   </style>
 </head>
 <body>
-  <div class="chart-container"> <h2>Graphique d'évolution</h2> <canvas id="myChart"></canvas>
+  <div class="chart-container"> <h2>Graphique d'Evolution</h2> <canvas id="myChart"></canvas>
   </div>
-  <button onclick="retour()">Retour</button>
+  <a href="http://localhost:8080/Page_de_donnees.html" class="btn btn-secondary btn-lg mb-2">Retour</a>
 
   <script>
     // Données (à remplacer par vos propres données)
     var data = {
-      labels: ['Janvier', 'Février', 'Mars', 'Avril'],
+      labels: ['Janvier', 'Fevrier', 'Mars', 'Avril'],
       datasets: [{
-        label: 'Mes données',
+        label: 'Mes donnees',
         data: [12, 19, 3, 5],
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
         borderColor: 'rgba(255, 99, 132, 1)',

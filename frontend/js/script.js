@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         
             // Envoyer l'ID sélectionné au backend
-            fetch('/connexion', {
+            fetch('http://localhost:5001/connexion', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -62,8 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(response => {
                 if (response.ok) {
-                    alert("Connexion réussie !");
-                    window.location.href = '/dashboard'; // Redirection après connexion
+                    //alert("Connexion réussie !");
+                    window.location.href = 'http://localhost:8080/Page_de_donnees.html'; // Redirection après connexion
                 } else {
                     alert("Erreur de connexion.");
                 }

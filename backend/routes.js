@@ -298,17 +298,15 @@ router.get('/utilisateurs/liste', async (req, res) => {
 router.post('/connexion', async (req, res) => {
   try {
     const { utilisateurId } = req.body;
-
+    console.log('Données reçues dans le corps :', req.body);
     const conn = await pool.getConnection();
     const [utilisateur] = await conn.query('SELECT * FROM Utilisateurs WHERE id = ?', [utilisateurId]);
     conn.release();
 
     if (!utilisateur) {
+      console.error("Aucun ID d'utilisateur fourni.");
       return res.status(404).send('Utilisateur non trouvé');
     }
-
-    // Simulez une session utilisateur ici (exemple avec JWT ou session)
-    req.session.user = { id: utilisateur.id, nom: utilisateur.nom, prenom: utilisateur.prenom };
 
     res.status(200).send('Connexion réussie');
   } catch (error) {

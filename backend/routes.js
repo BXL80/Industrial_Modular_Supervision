@@ -210,39 +210,60 @@ router.get('/utilisateurs', async (req, res) => {
 //Route pour ajouter un nouvel utilisateur (POST /utilisateurs)
 router.post('/utilisateurs', async (req, res) => {
   try {
-      const { nom, prenom, email, posteSelect } = req.body;
+      let { nom, prenom, email, posteSelect } = req.body;
 
-      if (!nom || !prenom || !email ||! posteSelect) {
-          console.error('Erreur pas de nom ou prenom');
-          return res.status(400).send('Nom et prénom sont requis');
+      if (!nom || !prenom || !email || !posteSelect) {
+          console.error('Erreur : un champ requis est manquant');
+          return res.status(400).send('Tous les champs sont requis.');
       }
+
+      //Conv en MAJ
+      nom = nom.trim().toUpperCase();
 
       const conn = await pool.getConnection();
 
-      // Insertion de l'utilisateur dans la base de données
-      const result = await conn.query('INSERT INTO Utilisateurs (nom, prenom, email, posteSelect) VALUES (?, ?, ?, ?)', [nom, prenom, email, posteSelect]);
-      
-      // Récupération du nouvel utilisateur ajouté
-      const [NouvelUtilisateur] = await conn.query('SELECT * FROM Utilisateurs WHERE id = ?', [result.insertId]);
+      // Vérifier si l'utilisateur existe déjà
+      const [existingUser] = await conn.query(
+          'SELECT * FROM Utilisateurs WHERE nom = ? AND prenom = ? AND email = ?',
+          [nom, prenom, email]
+      );
 
-      // Si l'utilisateur est trouvé
-      if (NouvelUtilisateur) {
-          // Conversion de BigInt en Number pour l'ID
-          NouvelUtilisateur.id = Number(NouvelUtilisateur.id);
-
+      if (existingUser) {
           conn.release();
+          return res.status(409).send(`L'utilisateur ${prenom} ${nom} existe déjà.`);
+      }
 
-          // Renvoyer l'utilisateur ajouté
-          res.json(NouvelUtilisateur);
+      // Ajouter l'utilisateur s'il n'existe pas
+      const result = await conn.query(
+          'INSERT INTO Utilisateurs (nom, prenom, email, poste) VALUES (?, ?, ?, ?)',
+          [nom, prenom, email, posteSelect]
+      );
+
+      const resultInsertId = result.insertId;
+
+      conn.release();
+
+      if (resultInsertId) {
+          const [nouvelUtilisateur] = await pool.query(
+              'SELECT * FROM Utilisateurs WHERE id = ?', 
+              [resultInsertId]
+          );
+
+          if (nouvelUtilisateur) {
+              return res.json(nouvelUtilisateur);
+          } else {
+              return res.status(404).send('Utilisateur non trouvé après insertion.');
+          }
       } else {
-          conn.release();
-          res.status(404).send('Utilisateur non trouvé après insertion.');
+          return res.status(500).send('Erreur lors de l\'insertion de l\'utilisateur.');
       }
   } catch (error) {
       console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
-      res.status(500).send('Erreur serveur');
+      return res.status(500).send('Erreur serveur');
   }
 });
+
+
 
 router.get('/postes', async (req, res) => {
   console.log("router poste");

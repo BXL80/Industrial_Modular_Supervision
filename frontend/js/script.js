@@ -55,41 +55,42 @@ document.addEventListener('DOMContentLoaded', function () {
     if (addUserForm) {
         addUserForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            let nom = document.getElementById('nom').value.trim().toUpperCase();
-            let prenom = document.getElementById('prenom').value.trim().toUpperCase();
+            // Récupération des champs
+    let nom = document.getElementById('nom').value.trim();
+    let prenom = document.getElementById('prenom').value.trim();
+    let email = document.getElementById('email').value.trim();
+    let posteSelect = document.getElementById('posteSelect').value;
 
-            if (!nom || !prenom) {
-                alert("Veuillez renseigner à la fois le nom et le prénom.");
-                return;
-            }
-
-            fetch('http://localhost:5001/utilisateurs')
-                .then(response => response.json())
-                .then(utilisateurs => {
-                    const utilisateurExiste = utilisateurs.some(u =>
-                        u.nom.toUpperCase() === nom && u.prenom.toUpperCase() === prenom
-                    );
-
-                    if (utilisateurExiste) {
-                        alert(`L'opérateur ${prenom} ${nom} existe déjà.`);
-                    } else {
-                        fetch('http://localhost:5001/utilisateurs', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ nom, prenom })
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                alert(`Opérateur ajouté : ${data.prenom} ${data.nom}`);
-                                const option = document.createElement('option');
-                                option.value = data.id;
-                                option.textContent = `${data.prenom} ${data.nom}`;
-                                utilisateurSelect.appendChild(option);
-                            })
-                            .catch(error => console.error('Erreur lors de l\'ajout de l\'opérateur:', error));
-                    }
-                })
-                .catch(error => console.error('Erreur lors de la récupération des opérateurs:', error));
-        });
+    // Validation des champs
+    if (!nom || !prenom || !email || !posteSelect) {
+        alert("Veuillez remplir tous les champs requis.");
+        return;
     }
-});
+
+    // Envoi des données au backend
+    fetch('http://localhost:5001/utilisateurs', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nom, prenom, email, posteSelect })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur lors de l\'ajout de l\'utilisateur');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(`Utilisateur ajouté : ${data.prenom} ${data.nom}`);
+            const utilisateurSelect = document.getElementById('utilisateurSelect');
+            const option = document.createElement('option');
+            option.value = data.id;
+            option.textContent = `${data.prenom} ${data.nom}`;
+            utilisateurSelect.appendChild(option);
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+        });
+    })
+}});

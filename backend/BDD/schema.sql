@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS Utilisateurs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100),
     prenom VARCHAR(100),
-    poste VARCHAR(100)
+    email VARCHAR(100),
+    poste INT
 );
 
 CREATE TABLE IF NOT EXISTS Donnees (

@@ -1,0 +1,53 @@
+/* Body Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5; /* Light gray background */
+  }
+  
+  /* Card Styles */
+  .card {
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+  
+  .card-header {
+    background-color: #333; /* Dark header background */
+    color: #fff; /* White text color */
+    font-weight: bold; /* Bold header text */
+    padding: 1rem; /* Adjust header padding */
+  }
+  
+  /* Card Body Styles */
+  .card-body {
+    padding: 2rem; /* Adjust body padding */
+  }
+  
+  .card-title {
+    margin-bottom: 1rem; /* Add space below title */
+  }
+  
+  /* List Group Styles */
+  .list-group-item {
+    background-color: #fff; /* White list item background */
+    border-color: #eee; /* Light border color */
+    border-left: none; /* Remove left border */
+    border-right: none; /* Remove right border */
+  }
+  
+  /* Content Styling */
+  #nom, #prenom, #email, #poste {
+    font-weight: bold; /* Emphasize user information */
+  }
+  
+  /* Button Styles */
+  .btn-danger {
+    background-color: #dc3545; /* Red button color */
+    border-color: #dc3545; /* Red button border */
+    padding: 10px 20px; /* Adjust button padding */
+  }
+  
+  /* Hover Effect for Button (Optional) */
+  .btn-danger:hover {
+    background-color: #c82333; /* Darker red on hover */
+    border-color: #c82333; /* Darker red border on hover */
+  }

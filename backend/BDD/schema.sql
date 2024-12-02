@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS Donnees (
     Vitesse INT,
     Humidity INT,
     Automate VARCHAR(100),
-    Status BOOLEN
+    Status BOOLEAN
 );
 
 /*

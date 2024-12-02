@@ -45,11 +45,10 @@
     <h3>Valeur du Registre</h3>
     <div id="register-value" class="alert alert-info">En attente...</div>
   </div>
-
   <script>
     document.getElementById('plc-config-form').addEventListener('submit', async (event) => {
       event.preventDefault();
-
+  
       const config = {
         ip: document.getElementById('ip').value,
         protocol: document.getElementById('protocol').value,
@@ -57,27 +56,42 @@
         size: parseInt(document.getElementById('size').value, 10),
         type: document.getElementById('type').value
       };
-
+  
       await fetch('/api/configure-plc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
       });
-
+  
       setInterval(async () => {
-        const response = await fetch('/api/last-value');
-        const data = await response.json();
-        const registerValue = document.getElementById('register-value');
-
-        if (response.ok) {
-          registerValue.textContent = `Valeur : ${data.value}`;
-          registerValue.className = 'alert alert-success';
-        } else {
-          registerValue.textContent = `Erreur : ${data.error}`;
+        try {
+          // Récupérer les données de la route API spécifiée
+          const response = await fetch('http://localhost:5001/api/modbus-read');
+          const data = await response.json();
+          const registerValue = document.getElementById('register-value');
+  
+          if (response.ok) {
+            // Assurez-vous que dataZ4Coils existe et est un tableau
+            if (data.dataZ4Coils && Array.isArray(data.dataZ4Coils) && data.dataZ4Coils.length > 0) {
+              registerValue.textContent = `Première valeur : ${data.dataZ4Coils[0]}`;
+              registerValue.className = 'alert alert-success';
+            } else {
+              registerValue.textContent = 'Aucune donnée disponible';
+              registerValue.className = 'alert alert-warning';
+            }
+          } else {
+            registerValue.textContent = `Erreur : ${data.error}`;
+            registerValue.className = 'alert alert-danger';
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération des données:', error);
+          const registerValue = document.getElementById('register-value');
+          registerValue.textContent = 'Erreur de connexion à l\'API';
           registerValue.className = 'alert alert-danger';
         }
       }, 1000);
     });
   </script>
+  
 </body>
 </html>

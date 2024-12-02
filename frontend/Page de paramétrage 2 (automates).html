@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paramétrage des Automates</title>
   <link rel="stylesheet" href="css/styleAutomate.css">
+  <link rel="icon" href="img/logo.jpg" />
+  <script src="js/Nouvelle ligne automate.js" defer></script>
 </head>
 <body>
 
@@ -16,35 +18,23 @@
         <tr>
           <th>Automate</th>
           <th>Adresse IP</th>
-          <th>Masque de sous-réseau</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="automateTable">
         <tr>
           <td>Automate 1</td>
           <td><input type="text" id="ip1" name="ip1" class="form-control"></td>
-          <td><input type="text" id="masque1" name="masque1" class="form-control"></td>
         </tr>
         <tr>
           <td>Automate 2</td>
           <td><input type="text" id="ip2" name="ip2" class="form-control"></td>
-          <td><input type="text" id="masque2" name="masque2" class="form-control"></td>
         </tr>
-        <tr>
-          <td>Automate 3</td>
-          <td><input type="text" id="ip3" name="ip3" class="form-control"></td>
-          <td><input type="text" id="masque3" name="masque3" class="form-control"></td>
-        </tr>
-        <tr>
-          <td>Automate 4</td>
-          <td><input type="text" id="ip4" name="ip4" class="form-control"></td>
-          <td><input type="text" id="masque4" name="masque4" class="form-control"></td>
-        </tr>
-      </tbody>
+        </tbody>
     </table>
 
     <div class="text-center mt-3">
       <button type="button" onclick="retour()" class="btn btn-secondary">Retour</button>
+      <button type="button" id="addAutomate" class="btn btn-primary">Ajouter Automate</button>
     </div>
   </form>
 

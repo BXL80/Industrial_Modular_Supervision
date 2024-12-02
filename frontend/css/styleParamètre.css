@@ -33,3 +33,19 @@ body {
     border-radius: 5px;
     padding: 10px 20px;
   }
+  
+  /* Target the button with class "btn-success" */
+.btn-success {
+  /* Adjust background color */
+  background-color: #28a745; /* Green color */
+  border-color: #28a745; /* Green border color */
+  
+  /* Optional: Add some hover effects */
+  transition: all 0.2s ease-in-out;
+  
+  /* Change color on hover */
+  &:hover {
+    background-color: #34d05b; /* Lighter green on hover */
+    border-color: #34d05b;
+  }
+}

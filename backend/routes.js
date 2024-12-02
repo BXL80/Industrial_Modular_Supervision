@@ -132,7 +132,7 @@ router.get('/api/modbus-read', async (req, res) => {
     // Envoyer la réponse au client
     res.json({
       success: true,
-      data: data.data,
+      data: dataZ4Coils.data,
       message: `Données lues avec succès à partir de l'adresse ${register}.`,
     });
 

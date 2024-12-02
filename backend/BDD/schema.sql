@@ -17,6 +17,15 @@ CREATE TABLE IF NOT EXISTS Utilisateurs (
     poste VARCHAR(100)
 );
 
+CREATE TABLE IF NOT EXISTS Donnees (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bool BOOLEAN,
+    Temperature INT,
+    Vitesse INT,
+    Humidity INT,
+    Automate VARCHAR(100),
+    Status BOOLEN
+);
 
 /*
 CREATE DATABASE IF NOT EXISTS hackathon;

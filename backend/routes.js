@@ -245,6 +245,7 @@ router.post('/utilisateurs', async (req, res) => {
 });
 
 router.get('/postes', async (req, res) => {
+  console.log("router poste");
   try {
     const conn = await pool.getConnection();
     const postes = await conn.query('SELECT id, poste FROM Poste');

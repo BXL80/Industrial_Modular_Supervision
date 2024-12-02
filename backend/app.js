@@ -12,8 +12,9 @@ dotenv.config();
 
 
 // Middleware pour traiter les données JSON
-app.use(cors());
+//app.use(cors());
 //app.use(cors({ origin: 'http://localhost:8080' }));
+app.use(cors({ origin: ['http://localhost:8080', 'http://frontend'] }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Utilisation des routes définies

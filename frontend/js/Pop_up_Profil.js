@@ -1,55 +1,64 @@
 const profileButton = document.querySelector('.btn-success');
 
 profileButton.addEventListener('click', async (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  const profileUrl = '/Page_profil.html'; // Assurez-vous que le chemin est correct
-
-  // Créer une fenêtre modale
-  const modal = document.createElement('div');
-  modal.classList.add('modal', 'fade');
-  modal.setAttribute('tabindex', '-1');
-  modal.setAttribute('aria-labelledby', 'profileModalLabel');
-  modal.setAttribute('aria-hidden', 'true');
-
-  modal.innerHTML = `
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="profileModalLabel">Profil</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Contenu sera injecté ici -->
-        </div>
-      </div>
-    </div>
-  `;
-
-  try {
-    const response = await fetch(profileUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch profile content: ${response.status}`);
+    const userId = sessionStorage.getItem('userId');
+    if (!userId) {
+        alert('Utilisateur non connecté.');
+        return;
     }
 
-    const html = await response.text();
-    modal.querySelector('.modal-body').innerHTML = html;
+    // Fetch user data from the backend
+    try {
+        const response = await fetch(`http://localhost:5001/utilisateurs/${userId}`);
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP : ${response.status}`);
+        }
 
-    // Ajouter la modal au body
-    document.body.appendChild(modal);
+        const userData = await response.json();
+        console.log('Données utilisateur récupérées :', userData);
 
-    // Afficher la modal avec Bootstrap
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
+        // Create a modal dynamically
+        const modal = document.createElement('div');
+        modal.classList.add('modal', 'fade');
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-labelledby', 'profileModalLabel');
+        modal.setAttribute('aria-hidden', 'true');
 
-    // Fermer la modal si l'utilisateur clique en dehors ou sur le bouton de fermeture
-    modal.addEventListener('click', (event) => {
-      if (event.target === modal) {
-        modalInstance.hide();
-      }
-    });
-  } catch (error) {
-    console.error('Error loading profile content:', error);
-    alert('Erreur lors du chargement du profil.');
-  }
+        // Inject user data into the modal content
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="profileModalLabel">Profil Utilisateur</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>ID :</strong> ${userData.id}</p>
+                        <p><strong>Nom :</strong> ${userData.nom}</p>
+                        <p><strong>Prénom :</strong> ${userData.prenom}</p>
+                        <p><strong>Email :</strong> ${userData.email}</p>
+                        <p><strong>Poste :</strong> ${userData.poste_nom}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add the modal to the body
+        document.body.appendChild(modal);
+
+        // Display the modal using Bootstrap
+        const modalInstance = new bootstrap.Modal(modal);
+        modalInstance.show();
+
+        // Remove the modal when it is hidden
+        modal.addEventListener('hidden.bs.modal', () => {
+            modal.remove();
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération du profil utilisateur :', error);
+        alert('Erreur lors du chargement du profil.');
+    }
 });

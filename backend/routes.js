@@ -327,6 +327,33 @@ router.post('/connexion', async (req, res) => {
   }
 });
 
+//Route pour l'affichage des informations utilisateurs dans le profil
+router.get('/utilisateurs/:id', async (req, res) => {
+  try {
+      const { id } = req.params;
+      const conn = await pool.getConnection();
+      
+      // Jointure pour récupérer le poste
+      const [user] = await conn.query(`
+          SELECT u.id, u.nom, u.prenom, u.email, p.poste AS poste_nom
+          FROM Utilisateurs u
+          LEFT JOIN Poste p ON u.poste = p.id
+          WHERE u.id = ?
+      `, [id]);
+
+      conn.release();
+
+      if (!user) {
+          return res.status(404).send('Utilisateur non trouvé.');
+      }
+
+      res.json(user);
+  } catch (error) {
+      console.error('Erreur lors de la récupération des données utilisateur :', error);
+      res.status(500).send('Erreur serveur.');
+  }
+});
+
 
 
 

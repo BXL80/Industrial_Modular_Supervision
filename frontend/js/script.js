@@ -42,34 +42,43 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(error => console.error('Erreur lors de la récupération des utilisateurs :', error));
 
         const loginForm = document.getElementById("loginForm");
-        loginForm.addEventListener("submit", (event) => {
-            event.preventDefault(); // Empêche le rechargement de la page
-        
-            const utilisateurId = document.getElementById("utilisateurSelect").value;
-        
-            if (!utilisateurId) {
-                alert("Veuillez sélectionner un utilisateur.");
-                return;
-            }
-        
-            // Envoyer l'ID sélectionné au backend
-            fetch('http://localhost:5001/connexion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ utilisateurId })
-            })
-            .then(response => {
-                if (response.ok) {
-                    //alert("Connexion réussie !");
-                    window.location.href = 'http://localhost:8080/Page_de_donnees.html'; // Redirection après connexion
-                } else {
-                    alert("Erreur de connexion.");
-                }
-            })
-            .catch(error => console.error('Erreur lors de la connexion :', error));
-        });
+loginForm.addEventListener("submit", (event) => {
+    event.preventDefault(); // Empêche le rechargement de la page
+
+    const utilisateurId = document.getElementById("utilisateurSelect").value;
+
+    if (!utilisateurId) {
+        alert("Veuillez sélectionner un utilisateur.");
+        return;
+    }
+
+    // Envoyer l'ID sélectionné au backend
+    fetch('http://localhost:5001/connexion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ utilisateurId })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erreur lors de la connexion : ${response.status}`);
+        }
+        return response.json(); // Convertir la réponse en JSON
+    })
+    .then(data => {
+        console.log('Données reçues après connexion :', data);
+
+        // Stocker l'ID utilisateur
+        sessionStorage.setItem('userId', utilisateurId);
+        console.log(`Utilisateur connecté avec l'ID : ${utilisateurId}`);
+
+        // Rediriger vers la page de données
+        window.location.href = "http://localhost:8080/Page_de_donnees.html";
+    })
+    .catch(error => console.error('Erreur lors de la connexion :', error));
+});
+
         
 
     // Recup Postes

@@ -294,26 +294,39 @@ router.get('/utilisateurs/liste', async (req, res) => {
 
 
 
-//Route de connexion
+// Route de connexion
 router.post('/connexion', async (req, res) => {
   try {
     const { utilisateurId } = req.body;
     console.log('Données reçues dans le corps :', req.body);
+
+    if (!utilisateurId) {
+      console.error("Aucun ID d'utilisateur fourni.");
+      return res.status(400).json({ error: 'ID utilisateur manquant' });
+    }
+
     const conn = await pool.getConnection();
     const [utilisateur] = await conn.query('SELECT * FROM Utilisateurs WHERE id = ?', [utilisateurId]);
     conn.release();
 
     if (!utilisateur) {
-      console.error("Aucun ID d'utilisateur fourni.");
-      return res.status(404).send('Utilisateur non trouvé');
+      console.error("Utilisateur introuvable avec l'ID :", utilisateurId);
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    res.status(200).send('Connexion réussie');
+    console.log(`Connexion réussie pour l'utilisateur avec l'ID : ${utilisateurId}`);
+    
+    // Réponse JSON valide
+    res.status(200).json({ 
+      message: 'Connexion réussie', 
+      userId: utilisateurId 
+    });
   } catch (error) {
     console.error('Erreur lors de la connexion:', error);
-    res.status(500).send('Erreur serveur');
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
 
 
 

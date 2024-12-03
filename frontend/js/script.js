@@ -79,7 +79,18 @@ loginForm.addEventListener("submit", (event) => {
     .catch(error => console.error('Erreur lors de la connexion :', error));
 });
 
-        
+    //Bouton déconnexion
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            // Supprimer l'ID utilisateur du sessionStorage
+            sessionStorage.removeItem('userId');
+            console.log('Utilisateur déconnecté.');
+
+            // Rediriger vers la page de connexion
+            window.location.href = '/Page_de_connexion.html';
+        });
+    }        
 
     // Recup Postes
     const posteSelect = document.getElementById("posteSelect");

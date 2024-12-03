@@ -26,7 +26,7 @@ profileButton.addEventListener('click', async (event) => {
         modal.setAttribute('aria-labelledby', 'profileModalLabel');
         modal.setAttribute('aria-hidden', 'true');
 
-        // Inject user data into the modal content
+        // Inject user data into the modal content, including the logout button
         modal.innerHTML = `
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -40,6 +40,9 @@ profileButton.addEventListener('click', async (event) => {
                         <p><strong>Prénom :</strong> ${userData.prenom}</p>
                         <p><strong>Email :</strong> ${userData.email}</p>
                         <p><strong>Poste :</strong> ${userData.poste_nom}</p>
+                        <div class="text-center mt-3">
+                            <a href="http://localhost:8080/Page_de_connexion.html" id="logoutButton" class="btn btn-danger">Déconnexion</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -51,6 +54,18 @@ profileButton.addEventListener('click', async (event) => {
         // Display the modal using Bootstrap
         const modalInstance = new bootstrap.Modal(modal);
         modalInstance.show();
+
+        // Attach logout functionality to the button
+        const logoutButton = modal.querySelector('#logoutButton');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                // Clear sessionStorage and redirect to the login page
+                sessionStorage.removeItem('userId');
+                console.log('Utilisateur déconnecté.');
+                window.location.href = '/Page_de_connexion.html';
+            });
+        }
 
         // Remove the modal when it is hidden
         modal.addEventListener('hidden.bs.modal', () => {

@@ -16,7 +16,7 @@ const connectModbusPLC = async (ip, port, id) => {
   } catch (err) {
     console.error("Erreur connexion Modbus:", err.message);
   }
-};
+};//
 
 // Connexion à un automate Siemens via Node7
 const connectSiemensPLC = (config) => {

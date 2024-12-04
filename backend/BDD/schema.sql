@@ -2,13 +2,6 @@ CREATE DATABASE IF NOT EXISTS hackathon;
 
 USE hackathon;
 
-CREATE TABLE IF NOT EXISTS plc_data (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    value INT,
-    type VARCHAR(50)
-);
-
 CREATE TABLE IF NOT EXISTS Utilisateurs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100),
@@ -27,7 +20,7 @@ CREATE TABLE IF NOT EXISTS Automates (
     numero_registre INT NOT NULL,
     taille_registre INT NOT NULL,
     type_donnees ENUM('readCoils', 'readHoldingRegisters') NOT NULL,
-    etat_bit BOOLEAN NOT NULL DEFAULT FALSE,
+    etat_bit INT NOT NULL DEFAULT 0,
     date_heure_paris DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

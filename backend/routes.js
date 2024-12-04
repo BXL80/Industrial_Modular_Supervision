@@ -67,24 +67,6 @@ router.get('/test-plc', async (req, res) => {
   }
 });
 
-// Exporter les données en CSV
-router.get('/export-data', async (req, res) => {
-  try {
-    const conn = await pool.getConnection();
-    const rows = await conn.query('SELECT * FROM plc_data');
-    conn.release();
-
-    const csvExporter = new ExportToCsv({ filename: 'plc_data.csv' });
-    const csvData = csvExporter.generateCsv(rows, true);
-
-    res.setHeader('Content-disposition', 'attachment; filename=plc_data.csv');
-    res.setHeader('Content-Type', 'text/csv');
-    res.send(csvData);
-  } catch (err) {
-    res.status(500).send(`Erreur lors de l'exportation: ${err.message}`);
-  }
-});
-
 
 // Route pour obtenir la dernière valeur lue
 router.get('/api/last-value', (req, res) => {
@@ -96,9 +78,8 @@ router.get('/api/last-value', (req, res) => {
   }
 });
 
-
+//Test de lecture avec automates
 const ModbusRTU = require('modbus-serial');
-
 router.get('/api/modbus-read', async (req, res) => {
   //const { ip, register, size} = req.body;
   ip = "172.16.1.24";
@@ -370,7 +351,9 @@ router.post('/automates', async (req, res) => {
   try {
     const newData = req.body;
     const conn = await pool.getConnection();
-    await conn.query(
+    //await conn.query(
+    // Insert into Automates
+    const result = await conn.query(
       'INSERT INTO Automates (nom_machine, nom_automate, ip_automate, port_connexion, bibliotheque, numero_registre, taille_registre, type_donnees) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [
         newData.nom_machine,
@@ -383,6 +366,17 @@ router.post('/automates', async (req, res) => {
         newData.type_donnees,
       ]
     );
+
+    // Retrieve the ID of the newly inserted row
+    const newID = result.insertId;
+
+    //Je dois ajouter une ligne dans ma table Reglage correspondant à ma ligne de table Automates
+    await conn.query(
+      `INSERT INTO Reglage (ID_tableau, valeur_attendue, valeur_min, valeur_max) 
+      VALUES (?, NULL, NULL, NULL)`,
+      [newID]
+    );
+
     conn.release();
     //res.sendStatus(201);
     res.status(201).json({ message: "Row added successfully" });

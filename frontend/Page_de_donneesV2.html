@@ -13,13 +13,10 @@
 <body>
   <header class="container d-flex flex-column align-items-center py-3">
     <h1>Industrial Supervision</h1>
-    <p id="userInfo"></p> <!-- Placeholder pour les infos utilisateur -->
     <img src="img/logo.jpg" alt="Logo" class="img-fluid" style="max-width: 100px;">
   </header>
 
   <main class="container mt-4">
-    <button id="addRowButton" class="btn btn-success mb-3">Ajouter Ligne</button> <!-- Bouton Ajouter Ligne -->
-  
     <table class="table table-striped" id="dynamicTable">
       <thead>
         <tr>
@@ -44,14 +41,17 @@
 
     <div class="d-flex justify-content-between mt-4">
       <!-- Trigger for Profile Modal -->
-      <button id="profileButton" class="btn btn-info">Profil</button>
+      <button id="profileButton" class="btn btn-info mb-3">Profil</button>
     
       <!-- Export Button -->
-      <button onclick="exporterDonnees()" class="btn btn-secondary">Exporter</button>
+      <button onclick="exporterDonnees()" class="btn btn-secondary mb-3">Exporter</button>
     
       <!-- Navigation Buttons -->
-      <a href="http://localhost:8080/Graphique_de_donnees.html" class="btn btn-secondary">Next</a>
-      <a href="http://localhost:8080/defauts.html" class="btn btn-warning btn-lg mb-2">Historique Défauts</a>
+      <a href="http://localhost:8080/Graphique_de_donnees.html" class="btn btn-secondary mb-3">Next</a>
+      <a href="http://localhost:8080/defauts.html" class="btn btn-warning btn-lg mb-3">Historique Défauts</a>
+      
+      <!-- Bouton Ajouter Ligne -->
+      <button id="addRowButton" class="btn btn-success mb-3">Ajouter Ligne</button>
     </div>
   </main>
 
@@ -122,7 +122,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="button" id="saveChangesButton" class="btn btn-primary">Sauvegarder</button>
+          <button type="button" id="saveChangesButton" class="btn btn-primary">Valider</button>
         </div>
       </div>
     </div>

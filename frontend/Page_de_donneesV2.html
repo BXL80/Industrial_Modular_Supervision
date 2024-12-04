@@ -101,7 +101,10 @@
             </div>
             <div class="mb-3">
               <label for="libInput" class="form-label">Bibliothèque</label>
-              <input type="text" id="libInput" class="form-control">
+              <select id="libInput" class="form-select">
+                <option value="Modbus-Serial">Modbus-Serial</option>
+                <option value="Node7">Node7</option>
+              </select>
             </div>
             <div class="mb-3">
               <label for="registreInput" class="form-label">Numéro de Registre</label>
@@ -131,142 +134,6 @@
   <script src="js/Telechargement_des_donnes.js" defer></script>
   <script src="js/Pop_up_Profil.js" defer></script>
   <script>
-  /*
-document.addEventListener('DOMContentLoaded', () => {
-      const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
-      const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-      const profileButton = document.getElementById('profileButton');
-      const addRowButton = document.getElementById('addRowButton');
-      //Pour chargement de la BDD dans le tableau
-      const tableBody = document.getElementById('tableBody');
-      // ID de la ligne en cours de modification
-      let editingRowId = null; 
-
-      addRowButton.addEventListener('click', () => {
-        editingRowId = null; // Ajout d'une nouvelle ligne
-        clearEditModal(); // Effacer les champs du modal
-        editModal.show();
-      });
-    })
-
-  //Détection de clique sur Modifier
-  tableBody.addEventListener('click', (event) => {
-    if (event.target.classList.contains('btn-primary')) {
-      const row = event.target.closest('tr');
-      editingRowId = row.cells[0].textContent; // Récupérer l'ID_tableau de la ligne
-      populateEditModal(row); // Remplir le modal avec les données de la ligne
-      editModal.show();
-    }
-  });
-  
-  //Pour chargement de la BDD dans le tableau
-  function loadTableData() {
-        fetch('http://localhost:5001/automates') // Replace with your API endpoint
-          .then((response) => response.json())
-          .then((data) => {
-            tableBody.innerHTML = '';
-            data.forEach((row) => {
-              tableBody.innerHTML += `
-                <tr>
-                  <td>${row.ID_tableau}</td>
-                  <td>${row.nom_machine}</td>
-                  <td>${row.nom_automate}</td>
-                  <td>${row.ip_automate}</td>
-                  <td>${row.port_connexion}</td>
-                  <td>${row.bibliotheque}</td>
-                  <td>${row.numero_registre}</td>
-                  <td>${row.taille_registre}</td>
-                  <td>${row.type_donnees}</td>
-                  <td>${row.etat_bit ? 'Activé' : 'Désactivé'}</td>
-                  <td>${row.formatted_date}</td>
-                  <td><button class="btn btn-primary btn-sm">Modifier</button></td>
-                </tr>
-              `;
-            });
-          })
-          .catch((error) => console.error('Erreur lors du chargement des données :', error));
-      }
-    
-    // Remplir le modal avec les données d'une ligne existante
-  function populateEditModal(row) {
-    document.getElementById('machineInput').value = row.cells[1].textContent;
-    document.getElementById('automateInput').value = row.cells[2].textContent;
-    document.getElementById('ipInput').value = row.cells[3].textContent;
-    document.getElementById('portInput').value = row.cells[4].textContent;
-    document.getElementById('libInput').value = row.cells[5].textContent;
-    document.getElementById('registreInput').value = row.cells[6].textContent;
-    document.getElementById('tailleInput').value = row.cells[7].textContent;
-    document.getElementById('typeInput').value = row.cells[8].textContent;
-  }
-
-  // Effacer les champs du modal
-  function clearEditModal() {
-    document.getElementById('machineInput').value = '';
-    document.getElementById('automateInput').value = '';
-    document.getElementById('ipInput').value = '';
-    document.getElementById('portInput').value = '';
-    document.getElementById('libInput').value = '';
-    document.getElementById('registreInput').value = '';
-    document.getElementById('tailleInput').value = '';
-    document.getElementById('typeInput').value = 'readCoils';
-  }
-
-  // Enregistrer les modifications
-  document.getElementById('saveChangesButton').addEventListener('click', () => {
-    const formData = {
-      nom_machine: document.getElementById('machineInput').value,
-      nom_automate: document.getElementById('automateInput').value,
-      ip_automate: document.getElementById('ipInput').value,
-      port_connexion: parseInt(document.getElementById('portInput').value, 10),
-      bibliotheque: document.getElementById('libInput').value,
-      numero_registre: parseInt(document.getElementById('registreInput').value, 10),
-      taille_registre: parseInt(document.getElementById('tailleInput').value, 10),
-      type_donnees: document.getElementById('typeInput').value,
-    };
-
-    if (editingRowId) {
-            // Update an existing row
-            fetch(`http://localhost:5001/automates/${editingRowId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Erreur lors de la mise à jour.');
-                    }
-                    return response.json();
-                })
-                .then(() => {
-                    editModal.hide();
-                    loadTableData();
-                })
-                .catch((error) => console.error('Erreur lors de la mise à jour :', error));
-        } else {
-            // Add a new row
-            fetch('http://localhost:5001/automates', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Erreur lors de l\'ajout.');
-                    }
-                    return response.json();
-                })
-                .then(() => {
-                    editModal.hide();
-                    loadTableData();
-                })
-                .catch((error) => console.error('Erreur lors de l\'ajout :', error));
-        }
-    });
-*/
 document.addEventListener('DOMContentLoaded', () => {
     const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
     const editModal = new bootstrap.Modal(document.getElementById('editModal'), { backdrop: 'static', keyboard: false });

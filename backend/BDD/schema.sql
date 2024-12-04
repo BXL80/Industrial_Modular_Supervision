@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS Automates (
     nom_automate VARCHAR(100) NOT NULL,
     ip_automate VARCHAR(15) NOT NULL,
     port_connexion INT NOT NULL,
-    bibliotheque VARCHAR(50) NOT NULL,
+    bibliotheque ENUM('Modbus-Serial', 'Node7') NOT NULL,
     numero_registre INT NOT NULL,
     taille_registre INT NOT NULL,
     type_donnees ENUM('readCoils', 'readHoldingRegisters') NOT NULL,

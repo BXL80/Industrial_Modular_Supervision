@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS Automates (
     numero_registre INT NOT NULL,
     taille_registre INT NOT NULL,
     type_donnees ENUM('readCoils', 'readHoldingRegisters') NOT NULL,
-    etat_bit BOOLEAN NOT NULL,
+    etat_bit BOOLEAN NOT NULL DEFAULT FALSE,
     date_heure_paris DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

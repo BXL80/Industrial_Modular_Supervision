@@ -396,7 +396,8 @@ router.post('/automates', async (req, res) => {
       ]
     );
     conn.release();
-    res.sendStatus(201);
+    //res.sendStatus(201);
+    res.status(201).json({ message: "Row added successfully" });
   } catch (error) {
     console.error('Erreur lors de l\'ajout des données:', error);
     res.status(500).send('Erreur serveur');

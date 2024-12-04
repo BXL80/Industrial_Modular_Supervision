@@ -467,11 +467,13 @@ router.get('/defauts', async (req, res) => {
               a.nom_machine, 
               a.nom_automate, 
               a.type_donnees, 
-              r.valeur_attendue, 
-              r.valeur_min, 
-              r.valeur_max, 
-              a.date_heure_paris, 
-              a.etat_bit 
+              CASE 
+                  WHEN a.type_donnees = 'readCoils' THEN r.valeur_attendue 
+                  ELSE CONCAT(r.valeur_min, ' - ', r.valeur_max) 
+              END AS valeur_attendue,
+              a.etat_bit,
+              DATE_FORMAT(a.date_heure_paris, '%Y-%m-%d') AS date,
+              DATE_FORMAT(a.date_heure_paris, '%H:%i:%s') AS time
           FROM Automates a
           JOIN Reglage r ON a.ID_tableau = r.ID_tableau
           WHERE 

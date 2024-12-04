@@ -26,13 +26,14 @@
           <th scope="col">Type de Données</th>
           <th scope="col">Valeur Actuelle</th>
           <th scope="col">Valeur Attendue</th>
-          <th scope="col">Date et Heure</th>
+          <th scope="col">Date</th>
+          <th scope="col">Heure</th>
         </tr>
       </thead>
       <tbody id="defautsTableBody">
         <!-- Les données seront insérées dynamiquement ici -->
       </tbody>
-    </table>
+    </table>    
   
     <p><a href="http://localhost:8080/Page_de_donneesV2.html" class="btn btn-secondary">Retour</a>
     <button onclick="exporterDonnees()" class="btn btn-secondary">Exporter</button></p>
@@ -40,28 +41,29 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const tableBody = document.getElementById('defautsTableBody');
+    const tableBody = document.getElementById('defautsTableBody');
 
-        // Récupérer les défauts depuis l'API
-        fetch('http://localhost:5001/defauts')
-            .then(response => response.json())
-            .then(data => {
-                tableBody.innerHTML = '';
-                data.forEach(defaut => {
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td>${defaut.nom_machine}</td>
-                            <td>${defaut.nom_automate}</td>
-                            <td>${defaut.type_donnees}</td>
-                            <td>${defaut.etat_bit}</td>
-                            <td>${defaut.valeur_attendue}</td>
-                            <td>${defaut.date_heure_paris}</td>
-                        </tr>
-                    `;
-                });
-            })
-            .catch(error => console.error('Erreur lors du chargement des défauts :', error));
-    });
+    // Récupérer les défauts depuis l'API
+    fetch('http://localhost:5001/defauts')
+        .then(response => response.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+            data.forEach(defaut => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${defaut.nom_machine}</td>
+                        <td>${defaut.nom_automate}</td>
+                        <td>${defaut.type_donnees}</td>
+                        <td>${defaut.etat_bit}</td>
+                        <td>${defaut.valeur_attendue}</td>
+                        <td>${defaut.date}</td>
+                        <td>${defaut.time}</td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(error => console.error('Erreur lors du chargement des défauts :', error));
+});
   </script>
 </body>
 

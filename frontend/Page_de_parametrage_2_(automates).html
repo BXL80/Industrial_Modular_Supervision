@@ -16,6 +16,21 @@
     <img src="img/logo.jpg" alt="Logo" class="img-fluid" style="max-width: 150px;">
   </header>
 
+  <!-- Toast Notification -->
+  <div aria-live="polite" aria-atomic="true" class="position-relative">
+    <div class="toast-container top-0 end-0 p-3">
+      <div id="saveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+        <div class="toast-header">
+          <strong class="me-auto">Notification</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          Réglage sauvegardé avec succès !
+        </div>
+      </div>
+    </div>
+  </div>  
+
   <!-- Form Section -->
   <main class="container">
     <form class="card shadow p-4" id="automateForm">
@@ -47,7 +62,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const tableBody = document.getElementById('tableBodyReglage');
-
+      const saveToast = new bootstrap.Toast(document.getElementById('saveToast'));
+  
       // Load table data
       function loadTableData() {
         fetch('http://localhost:5001/automates-reglages')
@@ -56,12 +72,12 @@
             tableBody.innerHTML = '';
             data.forEach(item => {
               tableBody.innerHTML += `
-                <tr>
+                <tr data-id="${item.ID_tableau}">
                   <td>${item.ID_tableau}</td>
                   <td>${item.nom_machine}</td>
                   <td>${item.type_donnees}</td>
                   <td>
-                    <input type="number" min="0" max="1" value="${item.valeur_attendue !== null && item.valeur_attendue !== undefined ? item.valeur_attendue : ''}"
+                    <input type="number" min="0" max="1" value="${item.valeur_attendue !== null ? item.valeur_attendue : ''}"
                       class="form-control" ${item.type_donnees === 'readCoils' ? '' : 'disabled'}>
                   </td>
                   <td>
@@ -73,7 +89,7 @@
                       class="form-control" ${item.type_donnees === 'readHoldingRegisters' ? '' : 'disabled'}>
                   </td>
                   <td>
-                    <button class="btn btn-primary btn-sm save-reglage" data-id="${item.ID_tableau}">
+                    <button class="btn btn-primary btn-sm save-reglage">
                       Sauvegarder
                     </button>
                   </td>
@@ -83,24 +99,24 @@
           })
           .catch(error => console.error('Erreur lors du chargement des données :', error));
       }
-
+  
       // Save settings
       tableBody.addEventListener('click', event => {
         if (event.target.classList.contains('save-reglage')) {
           const row = event.target.closest('tr');
-          const ID_tableau = event.target.dataset.id;
+          const ID_tableau = row.dataset.id;
           const type_donnees = row.cells[2].textContent;
           const valeur_attendue = row.cells[3].querySelector('input').value || null;
           const valeur_min = row.cells[4].querySelector('input').value || null;
           const valeur_max = row.cells[5].querySelector('input').value || null;
-
+  
           const reglage = {
             ID_tableau,
             valeur_attendue: type_donnees === 'readCoils' ? valeur_attendue : null,
             valeur_min: type_donnees === 'readHoldingRegisters' ? valeur_min : null,
             valeur_max: type_donnees === 'readHoldingRegisters' ? valeur_max : null,
           };
-
+  
           fetch(`http://localhost:5001/reglages/${ID_tableau}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -111,15 +127,24 @@
               return response.json();
             })
             .then(() => {
-              alert('Réglage sauvegardé avec succès');
-              loadTableData();
+              // Update the row dynamically (if necessary, fetch fresh data for this row)
+              if (type_donnees === 'readCoils') {
+                row.cells[3].querySelector('input').value = valeur_attendue;
+              } else if (type_donnees === 'readHoldingRegisters') {
+                row.cells[4].querySelector('input').value = valeur_min;
+                row.cells[5].querySelector('input').value = valeur_max;
+              }
+  
+              // Show success toast
+              document.querySelector('#saveToast .toast-body').textContent = 'Réglage sauvegardé avec succès';
+              saveToast.show();
             })
             .catch(error => console.error('Erreur lors de la sauvegarde :', error));
         }
       });
-
+  
       loadTableData();
     });
-  </script>
+  </script>  
 </body>
 </html>

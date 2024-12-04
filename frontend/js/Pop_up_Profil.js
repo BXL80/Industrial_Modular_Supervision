@@ -6,6 +6,7 @@ profileButton.addEventListener('click', async (event) => {
     const userId = sessionStorage.getItem('userId');
     if (!userId) {
         alert('Utilisateur non connecté.');
+        window.location.href = '/Page_de_connexion.html'; // Redirige vers la page de connexion
         return;
     }
 

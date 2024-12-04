@@ -421,6 +421,7 @@ router.put('/automates/:id', async (req, res) => {
   }
 });
 
+//Ajouter une ligne au réglage, utile uniquement pour du debug
 router.post('/reglages', async (req, res) => {
   try {
       const { ID_tableau, valeur_attendue, valeur_min, valeur_max } = req.body;
@@ -438,6 +439,28 @@ router.post('/reglages', async (req, res) => {
   } catch (error) {
       console.error('Erreur lors de la sauvegarde des réglages :', error);
       res.status(500).send('Erreur serveur');
+  }
+});
+
+//Modifier une ligne au réglage
+router.put('/reglages/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { valeur_attendue, valeur_min, valeur_max } = req.body;
+
+    const conn = await pool.getConnection();
+    await conn.query(
+      `UPDATE Reglage 
+       SET valeur_attendue = ?, valeur_min = ?, valeur_max = ? 
+       WHERE ID_tableau = ?`,
+      [valeur_attendue, valeur_min, valeur_max, id]
+    );
+    conn.release();
+
+    res.status(200).json({ message: 'Réglage mis à jour avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour du réglage :', error);
+    res.status(500).send('Erreur serveur');
   }
 });
 

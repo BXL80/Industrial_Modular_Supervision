@@ -17,6 +17,6 @@ if (currentPage !== 'Page_de_connexion.html') {
     } else {
         console.warn("Aucun utilisateur connecté.");
         //alert("Veuillez vous connecter pour accéder à cette page.");
-        //window.location.href = '/Page_de_connexion.html'; // Redirige vers la page de connexion
+        window.location.href = '/Page_de_connexion.html'; // Redirige vers la page de connexion
     }
 }

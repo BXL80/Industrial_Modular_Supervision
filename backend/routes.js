@@ -433,6 +433,72 @@ router.put('/automates/:id', async (req, res) => {
   }
 });
 
+router.post('/reglages', async (req, res) => {
+  try {
+      const { ID_tableau, valeur_attendue, valeur_min, valeur_max } = req.body;
+      const conn = await pool.getConnection();
+      await conn.query(`
+          INSERT INTO Reglage (ID_tableau, valeur_attendue, valeur_min, valeur_max)
+          VALUES (?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE 
+              valeur_attendue = VALUES(valeur_attendue),
+              valeur_min = VALUES(valeur_min),
+              valeur_max = VALUES(valeur_max)
+      `, [ID_tableau, valeur_attendue, valeur_min, valeur_max]);
+      conn.release();
+      res.json({ message: 'Réglage sauvegardé avec succès' });
+  } catch (error) {
+      console.error('Erreur lors de la sauvegarde des réglages :', error);
+      res.status(500).send('Erreur serveur');
+  }
+});
+
+
+router.get('/automates-reglages', async (req, res) => {
+  try {
+      const conn = await pool.getConnection();
+      const data = await conn.query(`
+          SELECT a.ID_tableau, a.nom_machine, a.type_donnees, 
+                 r.valeur_attendue, r.valeur_min, r.valeur_max
+          FROM Automates a
+          LEFT JOIN Reglage r ON a.ID_tableau = r.ID_tableau
+      `);
+      conn.release();
+      res.json(data);
+  } catch (error) {
+      console.error('Erreur lors de la récupération des réglages :', error);
+      res.status(500).send('Erreur serveur');
+  }
+});
+
+router.get('/defauts', async (req, res) => {
+  try {
+      const conn = await pool.getConnection();
+      const defauts = await conn.query(`
+          SELECT 
+              a.nom_machine, 
+              a.nom_automate, 
+              a.type_donnees, 
+              r.valeur_attendue, 
+              r.valeur_min, 
+              r.valeur_max, 
+              a.date_heure_paris, 
+              a.etat_bit 
+          FROM Automates a
+          JOIN Reglage r ON a.ID_tableau = r.ID_tableau
+          WHERE 
+              (a.type_donnees = 'readCoils' AND a.etat_bit != r.valeur_attendue)
+              OR 
+              (a.type_donnees = 'readHoldingRegisters' AND 
+              (a.etat_bit < r.valeur_min OR a.etat_bit > r.valeur_max))
+      `);
+      conn.release();
+      res.json(defauts);
+  } catch (error) {
+      console.error('Erreur lors de la récupération des défauts :', error);
+      res.status(500).send('Erreur serveur');
+  }
+});
 
 // Route pour mettre à jour la configuration du cron
 router.post('/api/configure-plc', (req, res) => {

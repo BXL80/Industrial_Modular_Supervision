@@ -20,13 +20,17 @@
     <table class="table table-bordered" id="defautsTable">
       <thead>
         <tr>
-          <th scope="col">Date</th>
-          <th scope="col">Description</th>
-          <th scope="col">Action</th>
+          <th scope="col">Nom de la Machine</th>
+          <th scope="col">Nom de l'Automate</th>
+          <th scope="col">Type de Données</th>
+          <th scope="col">Valeur Actuelle</th>
+          <th scope="col">Valeur Attendue</th>
+          <th scope="col">Date et Heure</th>
         </tr>
       </thead>
-      <tbody>
-        </tbody>
+      <tbody id="defautsTableBody">
+        <!-- Les données seront insérées dynamiquement ici -->
+      </tbody>
     </table>
   
     <a href="http://localhost:8080/Page_de_donneesV2.html" class="btn btn-secondary">Retour</a>
@@ -35,6 +39,32 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tableBody = document.getElementById('defautsTableBody');
+
+        // Récupérer les défauts depuis l'API
+        fetch('http://localhost:5001/defauts')
+            .then(response => response.json())
+            .then(data => {
+                tableBody.innerHTML = '';
+                data.forEach(defaut => {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td>${defaut.nom_machine}</td>
+                            <td>${defaut.nom_automate}</td>
+                            <td>${defaut.type_donnees}</td>
+                            <td>${defaut.etat_bit}</td>
+                            <td>${defaut.valeur_attendue}</td>
+                            <td>${defaut.date_heure_paris}</td>
+                        </tr>
+                    `;
+                });
+            })
+            .catch(error => console.error('Erreur lors du chargement des défauts :', error));
+    });
+  </script>
 </body>
 
 </html>

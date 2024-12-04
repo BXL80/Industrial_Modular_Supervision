@@ -6,19 +6,7 @@ const pool = require('./db');
 const { connectToPLC } = require('./plc');
 const { updateConfig, getLastValue } = require('./cron');
 
-//const { ExportToCsv } = require('export-to-csv');
-const exportData = async (req, res) => {
-  const { ExportToCsv } = await import('export-to-csv');
-
-  const csvExporter = new ExportToCsv({ filename: 'data.csv' });
-  const csvData = csvExporter.generateCsv(rows, true);
-
-  res.setHeader('Content-disposition', 'attachment; filename=data.csv');
-  res.setHeader('Content-Type', 'text/csv');
-  res.send(csvData);
-};
-
-
+//Route de test BDD
 router.get('/test-database', async (req, res) => {
   let conn;
   try {
@@ -32,7 +20,7 @@ router.get('/test-database', async (req, res) => {
   }
 });
 
-// Exemple de route frontend
+//Route de test frontend
 router.get('/test-frontend', (req, res) => {
   res.json({ success: true, message: 'Frontend accessible' });
 });

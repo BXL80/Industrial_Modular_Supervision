@@ -74,7 +74,7 @@ loginForm.addEventListener("submit", (event) => {
         console.log(`Utilisateur connecté avec l'ID : ${utilisateurId}`);
 
         // Rediriger vers la page de données
-        window.location.href = "http://localhost:8080/Page_de_donnees.html";
+        window.location.href = "http://localhost:8080/Page_de_donneesV2.html";
     })
     .catch(error => console.error('Erreur lors de la connexion :', error));
 });

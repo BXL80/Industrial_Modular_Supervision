@@ -142,12 +142,6 @@ router.get('/api/modbus-read', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
 router.post('/api/read-register', async (req, res) => {
   const { ip, protocol, register, size, type } = req.body;
 
@@ -355,6 +349,87 @@ router.get('/utilisateurs/:id', async (req, res) => {
 });
 
 
+//Route d'affichage tableau Page de donnees V2
+router.get('/automates', async (req, res) => {
+  try {
+      const conn = await pool.getConnection();
+      const data = await conn.query('SELECT * FROM Automates');
+      conn.release();
+      res.json(data);
+  } catch (error) {
+      console.error('Erreur lors de la récupération des automates:', error);
+      res.status(500).send('Erreur serveur');
+  }
+});
+
+//Trouver ligne spécifique automate
+router.get('/automates/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const conn = await pool.getConnection();
+    const [row] = await conn.query('SELECT * FROM Automates WHERE ID_tableau = ?', [id]);
+    conn.release();
+    res.json(row);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des données:', error);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+
+//AJout de ligne dans tableau Page de donnees V2
+router.post('/automates', async (req, res) => {
+  try {
+    const newData = req.body;
+    const conn = await pool.getConnection();
+    await conn.query(
+      'INSERT INTO Automates (nom_machine, nom_automate, ip_automate, port_connexion, bibliotheque, numero_registre, taille_registre, type_donnees) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        newData.nom_machine,
+        newData.nom_automate,
+        newData.ip_automate,
+        newData.port_connexion,
+        newData.bibliotheque,
+        newData.numero_registre,
+        newData.taille_registre,
+        newData.type_donnees,
+      ]
+    );
+    conn.release();
+    res.sendStatus(201);
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout des données:', error);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+//Modification d'une ligne Page de donnees V2 (BDD puis import sur la page)
+router.put('/automates/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+    const conn = await pool.getConnection();
+    await conn.query(
+      'UPDATE Automates SET nom_machine = ?, nom_automate = ?, ip_automate = ?, port_connexion = ?, bibliotheque = ?, numero_registre = ?, taille_registre = ?, type_donnees = ? WHERE ID_tableau = ?',
+      [
+        updatedData.nom_machine,
+        updatedData.nom_automate,
+        updatedData.ip_automate,
+        updatedData.port_connexion,
+        updatedData.bibliotheque,
+        updatedData.numero_registre,
+        updatedData.taille_registre,
+        updatedData.type_donnees,
+        id,
+      ]
+    );
+    conn.release();
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des données:', error);
+    res.status(500).send('Erreur serveur');
+  }
+});
 
 
 // Route pour mettre à jour la configuration du cron

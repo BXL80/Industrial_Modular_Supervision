@@ -1,4 +1,4 @@
-const profileButton = document.querySelector('.btn-success');
+const profileButton = document.querySelector('.btn-info');
 
 profileButton.addEventListener('click', async (event) => {
     event.preventDefault();

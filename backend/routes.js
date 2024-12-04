@@ -425,7 +425,8 @@ router.put('/automates/:id', async (req, res) => {
       ]
     );
     conn.release();
-    res.sendStatus(200);
+    res.status(201).json({ message: "Row added successfully" });
+    //res.sendStatus(200);
   } catch (error) {
     console.error('Erreur lors de la mise à jour des données:', error);
     res.status(500).send('Erreur serveur');

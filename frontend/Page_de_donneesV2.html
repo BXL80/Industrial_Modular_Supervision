@@ -16,6 +16,18 @@
     <img src="img/logo.jpg" alt="Logo" class="img-fluid" style="max-width: 100px;">
   </header>
 
+  <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+    <div class="toast" id="actionToast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+      <div class="toast-header">
+        <strong class="me-auto">Notification</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        <!-- Toast message will be injected dynamically -->
+      </div>
+    </div>
+  </div>  
+
   <main class="container mt-4">
     <table class="table table-striped" id="dynamicTable">
       <thead>
@@ -140,9 +152,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileButton = document.getElementById('profileButton');
     const addRowButton = document.getElementById('addRowButton');
     const tableBody = document.getElementById('tableBody');
+
+    //Ajout de toast
+    const toastElement = document.getElementById('actionToast');
+    const toastBody = toastElement.querySelector('.toast-body');
+    const toast = new bootstrap.Toast(toastElement);
     
     // Track the ID of the row being edited
     let editingRowId = null;
+
+    //Procédure d'affichage de toast
+    function showToast(message) {
+        toastBody.textContent = message;
+        toast.show();
+    }
 
     // Load table data from the backend
     function loadTableData() {
@@ -236,11 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
             })
                 .then(response => {
                     if (!response.ok) throw new Error('Erreur lors de la mise à jour.');
+                    showToast('Erreur lors de la modification !');
                     return response.json();
                 })
                 .then(() => {
                     editModal.hide();
                     loadTableData();
+                    showToast('Ligne modifiée avec succès !');
                 })
                 .catch(error => console.error('Erreur lors de la mise à jour :', error));
         } else {
@@ -252,11 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
             })
                 .then(response => {
                     if (!response.ok) throw new Error('Erreur lors de l\'ajout.');
+                    showToast('Erreur lors de l ajout !');
                     return response.json();
                 })
                 .then(() => {
                     editModal.hide();
                     loadTableData();
+                    showToast('Ligne ajoutée avec succès !');
                 })
                 .catch(error => console.error('Erreur lors de l\'ajout :', error));
         }

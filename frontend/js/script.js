@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const toastBody = toastElement.querySelector('.toast-body');
     const toast = new bootstrap.Toast(toastElement);
 
+    // Charger la liste des utilisateurs
+    const utilisateurSelect = document.getElementById("utilisateurSelect");
+
     buttons.forEach(button => {
         button.addEventListener('click', function() {
             const buttonText = this.value || this.innerText || "Bouton sans nom";
@@ -12,9 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
             toast.show();
         });
     });
-
-    // Charger la liste des utilisateurs
-    const utilisateurSelect = document.getElementById("utilisateurSelect");
 
     // Vérifiez que l'élément utilisateurSelect existe
     if (!utilisateurSelect) {
@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => console.error('Erreur lors de la récupération des utilisateurs :', error));
 
-        const loginForm = document.getElementById("loginForm");
-loginForm.addEventListener("submit", (event) => {
+    const loginForm = document.getElementById("loginForm");
+    loginForm.addEventListener("submit", (event) => {
     event.preventDefault(); // Empêche le rechargement de la page
 
     const utilisateurId = document.getElementById("utilisateurSelect").value;

@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 const pool = require('./db');
+const ModbusRTU = require("modbus-serial");
+const nodes7 = require("nodes7");
 
 const { connectToPLC } = require('./plc');
 const { updateConfig, getLastValue } = require('./cron');
@@ -79,7 +81,6 @@ router.get('/api/last-value', (req, res) => {
 });
 
 //Test de lecture avec automates
-const ModbusRTU = require('modbus-serial');
 router.get('/api/modbus-read', async (req, res) => {
   //const { ip, register, size} = req.body;
   ip = "172.16.1.24";
@@ -504,6 +505,68 @@ router.get('/defauts', async (req, res) => {
   } catch (error) {
       console.error('Erreur lors de la récupération des défauts :', error);
       res.status(500).send('Erreur serveur');
+  }
+});
+
+//Route de mise a jour de la colonne etat_bit en fonction de l'automate
+router.post("/update-automates", async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const automates = await conn.query("SELECT * FROM Automates");
+    const client = new ModbusRTU();
+    const s7Client = new nodes7();
+
+    for (const automate of automates) {
+      let etat_bit = null;
+
+      try {
+        if (automate.bibliotheque === "Modbus-Serial") {
+          await client.connectTCP(automate.ip_automate, { port: automate.port_connexion });
+          client.setID(1); // Default Modbus ID, adjust as needed
+          if (automate.type_donnees === "readCoils") {
+            const data = await client.readCoils(automate.numero_registre, automate.taille_registre);
+            etat_bit = data.data[0]; // Example: reading the first bit
+          } else if (automate.type_donnees === "readHoldingRegisters") {
+            const data = await client.readHoldingRegisters(automate.numero_registre, automate.taille_registre);
+            etat_bit = data.data[0]; // Example: reading the first register
+          }
+          client.close();
+        } 
+        else if (automate.bibliotheque === "Node7") {
+          await new Promise((resolve, reject) => {
+            s7Client.initiateConnection(
+              { port: 102, host: automate.ip_automate, rack: 0, slot: 1 },
+              (err) => {
+                if (err) return reject(err);
+
+                s7Client.readAllItems((err, values) => {
+                  if (err) return reject(err);
+                  etat_bit = values.someValue; // Replace 'someValue' with your variable name
+                  s7Client.dropConnection();
+                  resolve();
+                });
+              }
+            );
+          });
+        }
+
+        // Update etat_bit in the database
+        if (etat_bit !== null) {
+          await conn.query("UPDATE Automates SET etat_bit = ?, date_heure_paris = NOW() WHERE ID_tableau = ?", [
+            etat_bit,
+            automate.ID_tableau,
+          ]);
+        }
+      } catch (err) {
+        console.error(`Error processing automate ID ${automate.ID_tableau}:`, err.message);
+      }
+    }
+
+    conn.release();
+    res.status(200).json({ message: "Automates updated successfully" });
+  } catch (error) {
+    console.error("Error in update-automates route:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

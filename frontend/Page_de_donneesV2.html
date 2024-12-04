@@ -66,6 +66,11 @@
       <!-- Bouton Ajouter Ligne -->
       <button id="addRowButton" class="btn btn-success mb-3">Ajouter Ligne</button>
     </div>
+    <div>
+      <div class="text-center mt-4">
+        <button id="updateButton" class="btn btn-primary">Mettre à jour les données</button>
+      </div>      
+    </div>
   </main>
 
   <!-- Modal for Profile -->
@@ -186,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <td>${row.numero_registre}</td>
                             <td>${row.taille_registre}</td>
                             <td>${row.type_donnees}</td>
-                            <td>${row.etat_bit ? 'Activé' : 'Désactivé'}</td>
+                            <td>${row.etat_bit}</td>
                             <td>${row.formatted_date}</td>
                             <td>
                                 <button class="btn btn-primary btn-sm edit-button">Modifier</button>
@@ -289,6 +294,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(error => console.error('Erreur lors de l\'ajout :', error));
         }
     });
+
+    //Maj etat variable sur bouton
+    document.getElementById("updateButton").addEventListener("click", () => {
+      fetch("http://localhost:5001/update-automates", {
+        method: "POST",
+      })
+        .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to update automates.");
+      }
+      return response.json();
+      })
+        .then((data) => {
+          alert(data.message);
+          // Optionally, reload the table or page to reflect changes
+        //location.reload();
+      })
+        .catch((error) => {
+          console.error("Error during update:", error);
+          alert("Une erreur est survenue lors de la mise à jour.");
+        });
+});
+
 
     loadTableData();
 });

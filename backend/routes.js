@@ -353,7 +353,7 @@ router.get('/utilisateurs/:id', async (req, res) => {
 router.get('/automates', async (req, res) => {
   try {
       const conn = await pool.getConnection();
-      const data = await conn.query('SELECT * FROM Automates');
+      const data = await conn.query('SELECT *, DATE_FORMAT(date_heure_paris, "%Y-%m-%d %H:%i:%s") AS formatted_date FROM Automates');
       conn.release();
       res.json(data);
   } catch (error) {

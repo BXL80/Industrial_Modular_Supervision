@@ -150,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
           .then((data) => {
             tableBody.innerHTML = '';
             data.forEach((row) => {
-              const dateTimeParis = new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
               tableBody.innerHTML += `
                 <tr>
                   <td>${row.ID_tableau}</td>
@@ -163,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <td>${row.taille_registre}</td>
                   <td>${row.type_donnees}</td>
                   <td>${row.etat_bit ? 'Activé' : 'Désactivé'}</td>
-                  <td>${dateTimeParis}</td>
+                  <td>${row.formatted_date}</td>
                   <td><button class="btn btn-primary btn-sm">Modifier</button></td>
                 </tr>
               `;

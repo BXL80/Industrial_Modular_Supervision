@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS Automates (
     numero_registre INT NOT NULL,
     taille_registre INT NOT NULL,
     type_donnees ENUM('readCoils', 'readHoldingRegisters') NOT NULL,
-    etat_bit BOOLEAN NOT NULL
+    etat_bit BOOLEAN NOT NULL,
+    date_heure_paris DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS Automate (
@@ -56,7 +57,7 @@ INSERT IGNORE INTO Poste (id, poste)
 VALUES (3, 'IT');
 
 INSERT INTO Automates 
-(nom_machine, nom_automate, ip_automate, port_connexion, bibliotheque, numero_registre, taille_registre, type_donnees, etat_bit)
+(nom_machine, nom_automate, ip_automate, port_connexion, bibliotheque, numero_registre, taille_registre, type_donnees, etat_bit, date_heure_paris)
 VALUES
-('AU', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 514, 1, 'readCoils', 1),
-('Temperature', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 503, 1, 'readHoldingRegisters', 0);
+('AU', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 514, 1, 'readCoils', 1, CONVERT_TZ(NOW(), 'UTC', 'Europe/Paris')),
+('Temperature', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 503, 1, 'readHoldingRegisters', 0, CONVERT_TZ(NOW(), 'UTC', 'Europe/Paris'));

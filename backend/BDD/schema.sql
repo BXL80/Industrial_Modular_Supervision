@@ -43,6 +43,11 @@ CREATE TABLE IF NOT EXISTS Defauts (
     notification VARCHAR(100)
 );
 
+CREATE TABLE IF NOT EXISTS Config (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    update_interval INT NOT NULL DEFAULT 1 -- Interval in seconds
+);
+
 INSERT IGNORE INTO Utilisateurs (id, nom, prenom, email, poste)
 VALUES 
 (1, 'LECADIEU', 'Bixente', 'bixente.lecadieu@etu.unilasalle.fr', 2);
@@ -63,3 +68,5 @@ INSERT IGNORE INTO Reglage (ID_tableau, valeur_attendue, valeur_min, valeur_max)
 VALUES
 (1, 1, NULL, NULL), -- ID_tableau pour 'AU'
 (2, NULL, 10, 50);  -- ID_tableau pour 'Temperature'
+
+INSERT INTO Config (update_interval) VALUES (1);

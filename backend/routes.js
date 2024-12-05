@@ -512,26 +512,33 @@ router.get('/defauts', async (req, res) => {
 router.post("/update-automates", async (req, res) => {
   try {
     const conn = await pool.getConnection();
+
+    // Fetch all automates
     const automates = await conn.query("SELECT * FROM Automates");
     const client = new ModbusRTU();
     const s7Client = new nodes7();
 
+    // Iterate through each automate
     for (const automate of automates) {
       let etat_bit = null;
 
       try {
+        // Process Modbus-Serial automates
         if (automate.bibliotheque === "Modbus-Serial") {
           await client.connectTCP(automate.ip_automate, { port: automate.port_connexion });
           client.setID(1); // Default Modbus ID, adjust as needed
+
           if (automate.type_donnees === "readCoils") {
             const data = await client.readCoils(automate.numero_registre, automate.taille_registre);
-            etat_bit = data.data[0]; // Example: reading the first bit
+            etat_bit = data.data[0]; // Example: Reading the first bit
           } else if (automate.type_donnees === "readHoldingRegisters") {
             const data = await client.readHoldingRegisters(automate.numero_registre, automate.taille_registre);
-            etat_bit = data.data[0]; // Example: reading the first register
+            etat_bit = data.data[0]; // Example: Reading the first register
           }
           client.close();
-        } 
+        }
+
+        // Process Node7 automates
         else if (automate.bibliotheque === "Node7") {
           await new Promise((resolve, reject) => {
             s7Client.initiateConnection(
@@ -550,12 +557,13 @@ router.post("/update-automates", async (req, res) => {
           });
         }
 
-        // Update etat_bit in the database
+        // Update etat_bit and timestamp in the database
         if (etat_bit !== null) {
-          await conn.query("UPDATE Automates SET etat_bit = ?, date_heure_paris = NOW() WHERE ID_tableau = ?", [
-            etat_bit,
-            automate.ID_tableau,
-          ]);
+          await conn.query(
+            "UPDATE Automates SET etat_bit = ?, date_heure_paris = NOW() WHERE ID_tableau = ?",
+            [etat_bit, automate.ID_tableau]
+          );
+          console.log(`Updated automate ID ${automate.ID_tableau} with etat_bit: ${etat_bit}`);
         }
       } catch (err) {
         console.error(`Error processing automate ID ${automate.ID_tableau}:`, err.message);
@@ -570,6 +578,28 @@ router.post("/update-automates", async (req, res) => {
   }
 });
 
+router.get("/automates-latest", async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const latestData = await conn.query(`
+      SELECT 
+        a.*, 
+        DATE_FORMAT(a.date_heure_paris, "%Y-%m-%d %H:%i:%s") AS formatted_date
+      FROM Automates a
+      INNER JOIN (
+        SELECT ID_tableau, MAX(date_heure_paris) AS latest_date
+        FROM Automates
+        GROUP BY ID_tableau
+      ) b ON a.ID_tableau = b.ID_tableau AND a.date_heure_paris = b.latest_date
+    `);
+    conn.release();
+    res.json(latestData);
+  } catch (error) {
+    console.error("Error in automates-latest route:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // Route pour mettre à jour la configuration du cron
 router.post('/api/configure-plc', (req, res) => {
   const config = req.body;
@@ -579,5 +609,32 @@ router.post('/api/configure-plc', (req, res) => {
   updateConfig(config);
   res.json({ message: "Configuration mise à jour avec succès." });
 });
+
+//Inclusion de l'intervalle
+router.get('/config', async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const [config] = await conn.query('SELECT update_interval FROM Config LIMIT 1');
+    conn.release();
+    res.json(config);
+  } catch (error) {
+    console.error('Error fetching config:', error);
+    res.status(500).send('Error fetching config');
+  }
+});
+
+router.put('/config', async (req, res) => {
+  try {
+    const { update_interval } = req.body;
+    const conn = await pool.getConnection();
+    await conn.query('UPDATE Config SET update_interval = ?', [update_interval]);
+    conn.release();
+    res.status(200).send('Interval updated successfully');
+  } catch (error) {
+    console.error('Error updating config:', error);
+    res.status(500).send('Error updating config');
+  }
+});
+
 
 module.exports = router;

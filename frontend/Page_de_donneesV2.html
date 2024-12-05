@@ -71,6 +71,14 @@
         <button id="updateButton" class="btn btn-primary">Mettre à jour les données</button>
       </div>      
     </div>
+    <div class="mt-4 d-flex align-items-center">
+      <label for="intervalInput" class="me-2">Mise à jour automatique toutes les</label>
+      <input type="number" id="intervalInput" class="form-control w-auto" value="1" min="1" style="width: 80px;">
+      <span class="ms-2">secondes</span>
+    </div>
+    <div class="text-center mt-3">
+      <button id="applyIntervalButton" class="btn btn-primary">Appliquer</button>
+    </div>    
   </main>
 
   <!-- Modal for Profile -->
@@ -96,7 +104,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="editModalLabel">Modifier Ligne</h5>
+          <h5 class="modal-title" id="editModalLabel">Paramètre de la ligne</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -167,6 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Track the ID of the row being edited
     let editingRowId = null;
 
+    //Intervalle de rafraichissement
+    let updateInterval = null;
+    
+
     //Procédure d'affichage de toast
     function showToast(message) {
         toastBody.textContent = message;
@@ -175,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load table data from the backend
     function loadTableData() {
-        fetch('http://localhost:5001/automates')
+        fetch('http://localhost:5001/automates-latest')
             .then(response => response.json())
             .then(data => {
                 tableBody.innerHTML = '';
@@ -295,6 +307,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    fetch('http://localhost:5001/config')
+    .then(response => response.json())
+    .then(config => {
+      document.getElementById('intervalInput').value = config.update_interval;
+    })
+    .catch(error => console.error('Error fetching config:', error));
+
+  // Apply the interval
+  document.getElementById('applyIntervalButton').addEventListener('click', () => {
+    const intervalValue = parseInt(document.getElementById('intervalInput').value, 10);
+
+    if (isNaN(intervalValue) || intervalValue < 1) {
+      alert('Veuillez entrer un nombre valide supérieur ou égal à 1.');
+      return;
+    }
+
+    // Save to backend
+    fetch('http://localhost:5001/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ update_interval: intervalValue })
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to update interval');
+        alert('Intervalle mis à jour avec succès');
+      })
+      .catch(error => console.error('Error updating interval:', error));
+
+    // Clear existing interval
+    if (updateInterval) clearInterval(updateInterval);
+
+    // Set new interval
+    updateInterval = setInterval(() => {
+      fetch("http://localhost:5001/update-automates", { method: "POST" })
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to update automates');
+          return response.json();
+        })
+        .then(() => {
+          console.log('Data updated automatically');
+          loadTableData(); // Reload table to reflect updated data
+        })
+        .catch(error => console.error('Error during auto-update:', error));
+    }, intervalValue * 1000);
+  });
+
     //Maj etat variable sur bouton
     document.getElementById("updateButton").addEventListener("click", () => {
       fetch("http://localhost:5001/update-automates", {
@@ -309,7 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .then((data) => {
           //alert(data.message);
           // Optionally, reload the table or page to reflect changes
-        location.reload();
+          console.log("Update response:", data);
+          location.reload();
       })
         .catch((error) => {
           console.error("Error during update:", error);

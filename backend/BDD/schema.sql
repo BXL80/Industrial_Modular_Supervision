@@ -57,7 +57,7 @@ INSERT IGNORE INTO Automates
 (nom_machine, nom_automate, ip_automate, port_connexion, bibliotheque, numero_registre, taille_registre, type_donnees, etat_bit, date_heure_paris)
 VALUES
 ('AU', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 514, 1, 'readCoils', 1, NOW()),
-('Temperature', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 503, 1, 'readHoldingRegisters', 0, NOW());
+('Temperature', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 401, 1, 'readHoldingRegisters', 0, NOW());
 
 INSERT IGNORE INTO Reglage (ID_tableau, valeur_attendue, valeur_min, valeur_max)
 VALUES

@@ -307,9 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return response.json();
       })
         .then((data) => {
-          alert(data.message);
+          //alert(data.message);
           // Optionally, reload the table or page to reflect changes
-        //location.reload();
+        location.reload();
       })
         .catch((error) => {
           console.error("Error during update:", error);

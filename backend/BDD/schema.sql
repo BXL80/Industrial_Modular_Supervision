@@ -62,4 +62,4 @@ VALUES
 INSERT IGNORE INTO Reglage (ID_tableau, valeur_attendue, valeur_min, valeur_max)
 VALUES
 (1, 1, NULL, NULL), -- ID_tableau pour 'AU'
-(2, NULL, 20, 50);  -- ID_tableau pour 'Temperature'
+(2, NULL, 10, 50);  -- ID_tableau pour 'Temperature'

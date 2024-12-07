@@ -14,7 +14,16 @@ const startUpdating = async () => {
     console.log(`Updating automates every ${updateInterval} second(s)...`);
     const conn = await pool.getConnection();
     try {
-      const automates = await conn.query("SELECT * FROM Automates");
+      // Get only the latest entries for each `nom_machine`
+      const automates = await conn.query(`
+        SELECT a.* 
+        FROM Automates a
+        INNER JOIN (
+          SELECT nom_machine, MAX(date_heure_paris) AS latest_date
+          FROM Automates
+          GROUP BY nom_machine
+        ) b ON a.nom_machine = b.nom_machine AND a.date_heure_paris = b.latest_date;
+      `);
 
       for (const automate of automates) {
         let etat_bit = null;
@@ -24,7 +33,7 @@ const startUpdating = async () => {
             await client.connectTCP(automate.ip_automate, {
               port: automate.port_connexion,
             });
-            client.setID(1); // Default Modbus ID
+            client.setID(1);
             if (automate.type_donnees === "readCoils") {
               const data = await client.readCoils(
                 automate.numero_registre,
@@ -53,7 +62,7 @@ const startUpdating = async () => {
 
                   s7Client.readAllItems((err, values) => {
                     if (err) return reject(err);
-                    etat_bit = values.someValue; // Replace with the actual variable name
+                    etat_bit = values.someValue;
                     s7Client.dropConnection();
                     resolve();
                   });
@@ -70,7 +79,7 @@ const startUpdating = async () => {
           }
         } catch (err) {
           console.error(
-            `Error processing automate ID ${automate.ID_tableau}:`,
+            `Error processing automate nom_machine ${automate.nom_machine}:`,
             err.message
           );
         }
@@ -82,6 +91,7 @@ const startUpdating = async () => {
     }
   });
 };
+
 
 const stopUpdating = () => {
   if (task) task.stop();

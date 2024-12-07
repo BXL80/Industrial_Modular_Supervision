@@ -160,6 +160,28 @@
   <script src="js/Telechargement_des_donnes.js" defer></script>
   <script src="js/Pop_up_Profil.js" defer></script>
   <script>
+    const updateButton = document.getElementById('updateButton');
+
+// Supprimer tout ancien événement avant d'en ajouter un nouveau
+updateButton.removeEventListener('click', updateAutomates);
+updateButton.addEventListener('click', updateAutomates);
+
+function updateAutomates() {
+  fetch("http://localhost:5001/update-automates", { method: "POST" })
+    .then((response) => {
+      if (!response.ok) throw new Error("Failed to update automates.");
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data.message);
+      loadTableData(); // Recharger les données après mise à jour
+    })
+    .catch((error) => {
+      console.error("Error during update:", error);
+      alert("Une erreur est survenue lors de la mise à jour.");
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
     const editModal = new bootstrap.Modal(document.getElementById('editModal'), { backdrop: 'static', keyboard: false });
@@ -187,32 +209,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load table data from the backend
     function loadTableData() {
-        fetch('http://localhost:5001/automates-latest')
-            .then(response => response.json())
-            .then(data => {
-                tableBody.innerHTML = '';
-                data.forEach(row => {
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td>${row.ID_tableau}</td>
-                            <td>${row.nom_machine}</td>
-                            <td>${row.nom_automate}</td>
-                            <td>${row.ip_automate}</td>
-                            <td>${row.port_connexion}</td>
-                            <td>${row.bibliotheque}</td>
-                            <td>${row.numero_registre}</td>
-                            <td>${row.taille_registre}</td>
-                            <td>${row.type_donnees}</td>
-                            <td>${row.etat_bit}</td>
-                            <td>${row.formatted_date}</td>
-                            <td>
-                                <button class="btn btn-primary btn-sm edit-button">Modifier</button>
-                            </td>
-                        </tr>`;
-                });
-            })
-            .catch(error => console.error('Erreur lors du chargement des données :', error));
-    }
+  fetch('http://localhost:5001/automates-latest')
+    .then(response => response.json())
+    .then(data => {
+      tableBody.innerHTML = '';
+      data.forEach(row => {
+        tableBody.innerHTML += `
+          <tr>
+            <td>${row.ID_tableau}</td>
+            <td>${row.nom_machine}</td>
+            <td>${row.nom_automate}</td>
+            <td>${row.ip_automate}</td>
+            <td>${row.port_connexion}</td>
+            <td>${row.bibliotheque}</td>
+            <td>${row.numero_registre}</td>
+            <td>${row.taille_registre}</td>
+            <td>${row.type_donnees}</td>
+            <td>${row.etat_bit}</td>
+            <td>${row.formatted_date}</td>
+            <td>
+              <button class="btn btn-primary btn-sm edit-button">Modifier</button>
+            </td>
+          </tr>`;
+      });
+    })
+    .catch(error => console.error('Error loading data:', error));
+}
 
     // Open the modal for adding a new row
     addRowButton.addEventListener('click', () => {

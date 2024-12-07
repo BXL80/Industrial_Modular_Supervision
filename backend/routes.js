@@ -512,34 +512,28 @@ router.get('/defauts', async (req, res) => {
 router.post("/update-automates", async (req, res) => {
   try {
     const conn = await pool.getConnection();
-
-    // Fetch all automates
     const automates = await conn.query("SELECT * FROM Automates");
     const client = new ModbusRTU();
     const s7Client = new nodes7();
 
-    // Iterate through each automate
     for (const automate of automates) {
       let etat_bit = null;
 
       try {
-        // Process Modbus-Serial automates
         if (automate.bibliotheque === "Modbus-Serial") {
           await client.connectTCP(automate.ip_automate, { port: automate.port_connexion });
           client.setID(1); // Default Modbus ID, adjust as needed
 
           if (automate.type_donnees === "readCoils") {
             const data = await client.readCoils(automate.numero_registre, automate.taille_registre);
-            etat_bit = data.data[0]; // Example: Reading the first bit
+            etat_bit = data.data[0]; // Read the first bit
           } else if (automate.type_donnees === "readHoldingRegisters") {
             const data = await client.readHoldingRegisters(automate.numero_registre, automate.taille_registre);
-            etat_bit = data.data[0]; // Example: Reading the first register
+            etat_bit = data.data[0]; // Read the first register
           }
-          client.close();
-        }
 
-        // Process Node7 automates
-        else if (automate.bibliotheque === "Node7") {
+          client.close();
+        } else if (automate.bibliotheque === "Node7") {
           await new Promise((resolve, reject) => {
             s7Client.initiateConnection(
               { port: 102, host: automate.ip_automate, rack: 0, slot: 1 },
@@ -548,7 +542,7 @@ router.post("/update-automates", async (req, res) => {
 
                 s7Client.readAllItems((err, values) => {
                   if (err) return reject(err);
-                  etat_bit = values.someValue; // Replace 'someValue' with your variable name
+                  etat_bit = values.someValue; // Replace 'someValue' with the correct variable name
                   s7Client.dropConnection();
                   resolve();
                 });
@@ -557,13 +551,28 @@ router.post("/update-automates", async (req, res) => {
           });
         }
 
-        // Update etat_bit and timestamp in the database
+        // Insert a new row with the updated data
         if (etat_bit !== null) {
           await conn.query(
-            "UPDATE Automates SET etat_bit = ?, date_heure_paris = NOW() WHERE ID_tableau = ?",
-            [etat_bit, automate.ID_tableau]
+            `
+            INSERT INTO Automates (
+              nom_machine, nom_automate, ip_automate, port_connexion, bibliotheque, 
+              numero_registre, taille_registre, type_donnees, etat_bit, date_heure_paris
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            `,
+            [
+              automate.nom_machine,
+              automate.nom_automate,
+              automate.ip_automate,
+              automate.port_connexion,
+              automate.bibliotheque,
+              automate.numero_registre,
+              automate.taille_registre,
+              automate.type_donnees,
+              etat_bit,
+            ]
           );
-          console.log(`Updated automate ID ${automate.ID_tableau} with etat_bit: ${etat_bit}`);
         }
       } catch (err) {
         console.error(`Error processing automate ID ${automate.ID_tableau}:`, err.message);
@@ -578,19 +587,28 @@ router.post("/update-automates", async (req, res) => {
   }
 });
 
+//Filtre pour affichage unique de la dernier date
 router.get("/automates-latest", async (req, res) => {
   try {
     const conn = await pool.getConnection();
     const latestData = await conn.query(`
-      SELECT 
-        a.*, 
-        DATE_FORMAT(a.date_heure_paris, "%Y-%m-%d %H:%i:%s") AS formatted_date
+      SELECT DISTINCT a.ID_tableau, 
+             a.nom_machine, 
+             a.nom_automate, 
+             a.ip_automate, 
+             a.port_connexion, 
+             a.bibliotheque, 
+             a.numero_registre, 
+             a.taille_registre, 
+             a.type_donnees, 
+             a.etat_bit, 
+             DATE_FORMAT(a.date_heure_paris, "%Y-%m-%d %H:%i:%s") AS formatted_date
       FROM Automates a
-      INNER JOIN (
-        SELECT ID_tableau, MAX(date_heure_paris) AS latest_date
-        FROM Automates
-        GROUP BY ID_tableau
-      ) b ON a.ID_tableau = b.ID_tableau AND a.date_heure_paris = b.latest_date
+      JOIN (
+          SELECT nom_machine, MAX(date_heure_paris) AS latest_date
+          FROM Automates
+          GROUP BY nom_machine
+      ) b ON a.nom_machine = b.nom_machine AND a.date_heure_paris = b.latest_date;
     `);
     conn.release();
     res.json(latestData);
@@ -599,6 +617,73 @@ router.get("/automates-latest", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+//Route for updating 'etat_bit' and ensuring latest rows are stored
+router.post("/update-automates", async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const automates = await conn.query(`
+      SELECT a.* 
+      FROM Automates a
+      INNER JOIN (
+        SELECT nom_machine, MAX(date_heure_paris) AS latest_date
+        FROM Automates
+        GROUP BY nom_machine
+      ) b ON a.nom_machine = b.nom_machine AND a.date_heure_paris = b.latest_date;
+    `);
+
+    const client = new ModbusRTU();
+    const s7Client = new nodes7();
+
+    for (const automate of automates) {
+      let etat_bit = null;
+
+      try {
+        if (automate.bibliotheque === "Modbus-Serial") {
+          await client.connectTCP(automate.ip_automate, {
+            port: automate.port_connexion,
+          });
+          client.setID(1);
+          if (automate.type_donnees === "readCoils") {
+            const data = await client.readCoils(
+              automate.numero_registre,
+              automate.taille_registre
+            );
+            etat_bit = data.data[0];
+          } else if (automate.type_donnees === "readHoldingRegisters") {
+            const data = await client.readHoldingRegisters(
+              automate.numero_registre,
+              automate.taille_registre
+            );
+            etat_bit = data.data[0];
+          }
+          client.close();
+        }
+
+        if (etat_bit !== null) {
+          await conn.query(`
+            UPDATE Automates
+            SET etat_bit = ?, date_heure_paris = NOW()
+            WHERE ID_tableau = ?;
+          `, [etat_bit, automate.ID_tableau]);
+        }
+      } catch (err) {
+        console.error(
+          `Error processing automate nom_machine ${automate.nom_machine}:`,
+          err.message
+        );
+      }
+    }
+
+    conn.release();
+    res.status(200).json({ message: "Automates updated successfully" });
+  } catch (error) {
+    console.error("Error in update-automates route:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 
 // Route pour mettre à jour la configuration du cron
 router.post('/api/configure-plc', (req, res) => {

@@ -18,3 +18,16 @@ What are we using?
   - Export-to-CSV (to export and use data in other software)
   - Node-cron (to execute tasks at periodic times)
   - Dotenv (password gestion)
+
+To launch the project, you'll need Docker.
+
+Clone the project in your choosen directory with :
+git clone https://github.com/BXL80/Industrial_Modular_Supervision
+
+Then launch the containers with :
+docker-compose up --build
+
+And finaly conect to the frontend at this URL :
+localhost:8080
+
+You'll be on the login page.

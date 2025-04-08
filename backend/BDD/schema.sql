@@ -63,6 +63,19 @@ CREATE TABLE IF NOT EXISTS Reglage (
     FOREIGN KEY (ID_tableau) REFERENCES Automates(ID_tableau) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS HistoriqueReglage (
+    id_hist INT AUTO_INCREMENT PRIMARY KEY,
+    ID_reglage INT NOT NULL,
+    ID_tableau INT NOT NULL,
+    valeur_attendue BOOLEAN,
+    valeur_min INT,
+    valeur_max INT,
+    valeur_min_tres_bas INT,
+    valeur_max_tres_haut INT,
+    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ID_reglage) REFERENCES Reglage(ID_reglage) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS Poste (
     id INT AUTO_INCREMENT PRIMARY KEY,
     poste VARCHAR(50)
@@ -94,6 +107,8 @@ CREATE TABLE IF NOT EXISTS HistoriqueAutomates (
     date_enregistrement DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 808 Bit gestion avec seuil ou non
+
 INSERT IGNORE INTO Utilisateurs (id, nom, prenom, email, poste)
 VALUES 
 (1, 'LECADIEU', 'Bixente', 'bixente.lecadieu@etu.unilasalle.fr', 2),
@@ -109,13 +124,13 @@ INSERT IGNORE INTO Automates
 (nom_machine, nom_automate, ip_automate, port_connexion, bibliotheque, numero_registre, taille_registre, type_donnees, etat_bit, date_heure_paris, cycle_auto)
 VALUES
 ('Cycle', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 250, 1, 'readHoldingRegisters', 1, NOW(), 0),
-('Temperature', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 223, 1, 'readHoldingRegisters', 0, NOW(), 0),
-('ValMinTB', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 800, 1, 'readHoldingRegisters', 0, NOW(), 0);
+('Temperature', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 223, 1, 'readHoldingRegisters', 0, NOW(), 0);
+--('ValMinTB', 'Zone4', '172.16.1.24', 502, 'Modbus-Serial', 800, 1, 'readHoldingRegisters', 0, NOW(), 0);
 -- 226, 2 pour Temperature en float ou 223, 1 puis division par 10 
 INSERT IGNORE INTO Reglage (ID_tableau, valeur_attendue, valeur_min, valeur_max, valeur_min_tres_bas, valeur_max_tres_haut)
 VALUES
 (1, NULL, 0, 1, 0, 1),
-(2, NULL, 20, 35, 15, 45),
-(3, NULL, 20, 35, 15, 45);
+(2, NULL, 20, 35, 15, 45);
+--(3, NULL, 20, 35, 15, 45);
 --(1, 1, NULL, NULL), -- ID_tableau pour 'AU'
 INSERT INTO Config (update_interval) VALUES (1);

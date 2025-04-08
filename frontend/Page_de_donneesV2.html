@@ -61,7 +61,7 @@
       <button id="profileButton" class="btn btn-info mb-3">Profil</button>
     
       <!-- Export Button -->
-      <button onclick="exporterDonnees()" class="btn btn-secondary mb-3">Exporter</button>
+      <button onclick="exporterSeuil()" class="btn btn-secondary mb-3">Exporter</button>
     
       <!-- Navigation Buttons -->
       <a href="http://localhost:8080/Graphique_de_donnees.html" class="btn btn-secondary mb-3">Graphique</a>
@@ -201,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (data.cycle_auto !== undefined) {
             document.getElementById("cycle_auto").textContent = data.cycle_auto;
           }
-          // Vous pouvez également recharger la table si nécessaire
           loadTableData();
         })
         .catch(error => console.error('Error during auto-update:', error));
@@ -400,23 +399,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }, intervalValue * 1000);
     });
 
-
-/*
-    updateInterval = setInterval(() => {
-      fetch("http://localhost:5001/update-automates", { method: "POST" })
-        .then(response => {
-          if (!response.ok) throw new Error('Failed to update automates');
-          return response.json();
-        })
-        .then(() => {
-          console.log('Data updated automatically');
-          loadTableData(); // Reload table to reflect updated data
-        })
-        .catch(error => console.error('Error during auto-update:', error));
-    }, intervalValue * 1000);
-  });
-*/
-
     //Maj etat variable sur bouton
     document.getElementById("updateButton").addEventListener("click", () => {
       fetch("http://localhost:5001/update-automates", {
@@ -445,11 +427,46 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
     //loadTableData();
+function exporterSeuil() {
+  console.log('Exportation des données depuis HistoriqueReglage...');
+  
+  // Récupérer toutes les données via l'API
+  fetch('http://localhost:5001/historique-reglage/all')
+    .then(response => response.json())
+    .then(data => {
+      let csvContent = '';
+      // Définir l'en-tête du CSV en fonction des colonnes de la table HistoriqueReglage
+      csvContent += 'id_hist,ID_reglage,ID_tableau,valeur_attendue,valeur_min,valeur_max,valeur_min_tres_bas,valeur_max_tres_haut,date_modification\n';
+      
+      // Parcourir chaque enregistrement et concaténer les données
+      data.forEach(row => {
+        const rowData = [
+          row.id_hist,
+          row.ID_reglage,
+          row.ID_tableau,
+          row.valeur_attendue,
+          row.valeur_min,
+          row.valeur_max,
+          row.valeur_min_tres_bas,
+          row.valeur_max_tres_haut,
+          row.formatted_date // affichage au format 'YYYY-MM-DD HH:MM:SS'
+        ];
+        csvContent += rowData.join(',') + '\n';
+      });
 
-    function exporterDonnees() {
-      console.log('Exportation des données...');
-      alert('Fonctionnalité d\'exportation en cours de développement.');
-    }
+      // Créer un blob CSV
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+      
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'seuils.csv';
+
+      // Simuler un clic pour déclencher le téléchargement
+      link.click();
+    })
+    .catch(error => console.error('Erreur lors du téléchargement des données :', error));
+}
   </script>
 </body>
 </html>

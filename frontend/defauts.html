@@ -21,11 +21,9 @@
     <table class="table table-bordered" id="defautsTable">
       <thead>
         <tr>
-          <th scope="col">Nom renseigné</th>
-          <th scope="col">Nom de l'Automate</th>
-          <th scope="col">Type de Données</th>
-          <th scope="col">Valeur Actuelle</th>
-          <th scope="col">Valeur Attendue</th>
+          <th scope="col">Type d'Alarme</th>
+          <th scope="col">Niveau</th>
+          <th scope="col">Température</th>
           <th scope="col">Date</th>
           <th scope="col">Heure</th>
         </tr>
@@ -33,7 +31,8 @@
       <tbody id="defautsTableBody">
         <!-- Les données seront insérées dynamiquement ici -->
       </tbody>
-    </table>    
+    </table>
+    
   
     <p><a href="http://localhost:8080/Page_de_donneesV2.html" class="btn btn-secondary">Retour</a>
     <button onclick="exporterDonnees()" class="btn btn-secondary">Exporter</button></p>
@@ -41,29 +40,62 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-    const tableBody = document.getElementById('defautsTableBody');
+      const tableBody = document.getElementById('defautsTableBody');
 
-    // Récupérer les défauts depuis l'API
-    fetch('http://localhost:5001/defauts')
-        .then(response => response.json())
-        .then(data => {
-            tableBody.innerHTML = '';
-            data.forEach(defaut => {
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>${defaut.nom_machine}</td>
-                        <td>${defaut.nom_automate}</td>
-                        <td>${defaut.type_donnees}</td>
-                        <td>${defaut.etat_bit}</td>
-                        <td>${defaut.valeur_attendue}</td>
-                        <td>${defaut.date}</td>
-                        <td>${defaut.time}</td>
-                    </tr>
-                `;
-            });
-        })
-        .catch(error => console.error('Erreur lors du chargement des défauts :', error));
-});
+      // Récupérer l'historique complet des alarmes via l'API (par exemple /historique-alarmes)
+      fetch('http://localhost:5001/historique-alarmes')
+          .then(response => response.json())
+          .then(data => {
+              tableBody.innerHTML = '';
+              data.forEach(alarme => {
+                  tableBody.innerHTML += `
+                      <tr>
+                          <td>${alarme.type_alarme}</td>
+                          <td>${alarme.niveau}</td>
+                          <td>${alarme.temperature}</td>
+                          <td>${alarme.date}</td>
+                          <td>${alarme.time}</td>
+                      </tr>
+                  `;
+              });
+          })
+          .catch(error => console.error('Erreur lors du chargement des alarmes :', error));
+    });
+
+    function exporterDonnees() {
+    // Sélectionner le tableau contenant les données
+    const table = document.getElementById('defautsTable');
+    let csvContent = '';
+
+    // Récupérer la ligne d'en-tête
+    const headerCells = table.querySelector('thead tr').children;
+    let headerRow = [];
+    for (let i = 0; i < headerCells.length; i++) {
+      headerRow.push(headerCells[i].innerText.trim());
+    }
+    csvContent += headerRow.join(',') + "\n";
+
+    // Récupérer toutes les lignes du corps du tableau (<tbody>)
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      let rowData = [];
+      const cells = row.querySelectorAll('td');
+      cells.forEach(cell => {
+        rowData.push(cell.innerText.trim());
+      });
+      csvContent += rowData.join(',') + "\n";
+    });
+
+    // Création d'un objet Blob contenant les données CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+
+    // Création d'un lien de téléchargement et déclenchement du clic
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'alarmes.csv'; // Nom du fichier CSV téléchargé
+    link.click();
+  }
+
   </script>
 </body>
 

@@ -83,19 +83,19 @@
                       class="form-control" ${item.type_donnees === 'readCoils' ? '' : 'disabled'}>
                   </td>
                   <td>
-                    <input type="number" value="${item.valeur_min || ''}" 
+                    <input type="number" step="any" value="${item.valeur_min || ''}" 
                       class="form-control" ${item.type_donnees === 'readHoldingRegisters' ? '' : 'disabled'}>
                   </td>
                   <td>
-                    <input type="number" value="${item.valeur_max || ''}" 
+                    <input type="number" step="any" value="${item.valeur_max || ''}" 
                       class="form-control" ${item.type_donnees === 'readHoldingRegisters' ? '' : 'disabled'}>
                   </td>
                   <td>
-                    <input type="number" value="${item.valeur_min_tres_bas || ''}" 
+                    <input type="number" step="any" value="${item.valeur_min_tres_bas || ''}" 
                       class="form-control" ${item.type_donnees === 'readHoldingRegisters' ? '' : 'disabled'}>
                   </td>
                   <td>
-                    <input type="number" value="${item.valeur_max_tres_haut || ''}" 
+                    <input type="number" step="any" value="${item.valeur_max_tres_haut || ''}" 
                       class="form-control" ${item.type_donnees === 'readHoldingRegisters' ? '' : 'disabled'}>
                   </td>
                   <td>
@@ -111,45 +111,45 @@
       }
   
       // Save settings
-      // Save settings
-tableBody.addEventListener('click', event => {
-  if (event.target.classList.contains('save-reglage')) {
-    const row = event.target.closest('tr');
-    const ID_tableau = row.dataset.id;
-    const type_donnees = row.cells[2].textContent;
-    const valeur_attendue = row.cells[3].querySelector('input').value || null;
-    const valeur_min = row.cells[4].querySelector('input').value || null;
-    const valeur_max = row.cells[5].querySelector('input').value || null;
-    const valeur_min_tres_bas = row.cells[6].querySelector('input').value || null;
-    const valeur_max_tres_haut = row.cells[7].querySelector('input').value || null;
+      tableBody.addEventListener('click', event => {
+        if (event.target.classList.contains('save-reglage')) {
+          const row = event.target.closest('tr');
+          const ID_tableau = row.dataset.id;
+          const type_donnees = row.cells[2].textContent;
+          const valeur_attendue = row.cells[3].querySelector('input').value || null;
+          const valeur_min = row.cells[4].querySelector('input').value || null;
+          const valeur_max = row.cells[5].querySelector('input').value || null;
+          const valeur_min_tres_bas = row.cells[6].querySelector('input').value || null;
+          const valeur_max_tres_haut = row.cells[7].querySelector('input').value || null;
 
-    const reglage = {
-      ID_tableau,
-      valeur_attendue: type_donnees === 'readCoils' ? valeur_attendue : null,
-      valeur_min: type_donnees === 'readHoldingRegisters' ? valeur_min : null,
-      valeur_max: type_donnees === 'readHoldingRegisters' ? valeur_max : null,
-      valeur_min_tres_bas: type_donnees === 'readHoldingRegisters' ? valeur_min_tres_bas : null,
-      valeur_max_tres_haut: type_donnees === 'readHoldingRegisters' ? valeur_max_tres_haut : null,
-    };
+          const reglage = {
+            ID_tableau,
+            valeur_attendue: type_donnees === 'readCoils' ? valeur_attendue : null,
+            valeur_min: type_donnees === 'readHoldingRegisters' ? valeur_min : null,
+            valeur_max: type_donnees === 'readHoldingRegisters' ? valeur_max : null,
+            valeur_min_tres_bas: type_donnees === 'readHoldingRegisters' ? valeur_min_tres_bas : null,
+            valeur_max_tres_haut: type_donnees === 'readHoldingRegisters' ? valeur_max_tres_haut : null,
+          };
 
-    fetch(`http://localhost:5001/reglages/${ID_tableau}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(reglage),
-    })
-      .then(response => {
-        if (!response.ok) throw new Error('Erreur lors de la sauvegarde.');
-        return response.json();
-      })
-      .then(() => {
-        // Affichage du toast de succès
-        document.querySelector('#saveToast .toast-body').textContent = 'Réglage sauvegardé avec succès';
-        saveToast.show();
-      })
-      .catch(error => console.error('Erreur lors de la sauvegarde :', error));
-  }
-});
-      loadTableData();
+          fetch(`http://localhost:5001/reglages/${ID_tableau}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reglage),
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('Erreur lors de la sauvegarde.');
+              return response.json();
+            })
+            .then(() => {
+              // Affichage du toast de succès
+              loadTableData();//Pour mise à jour juste après modification
+              document.querySelector('#saveToast .toast-body').textContent = 'Réglage sauvegardé avec succès';
+              saveToast.show();
+            })
+            .catch(error => console.error('Erreur lors de la sauvegarde :', error));
+        }
+      });
+      loadTableData(); //Pour mise à jour en entrée sur la page
     });
   </script>  
 </body>

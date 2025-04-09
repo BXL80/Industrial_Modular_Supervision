@@ -880,7 +880,6 @@ router.put('/reglages/:ID_tableau', async (req, res) => {
 });
 
 // Export de toutes les valeurs
-/*  Voir pour exporter toutes ces données aussi
 router.get('/historique-automates/all', async (req, res) => {
   try {
     const conn = await pool.getConnection();
@@ -895,7 +894,6 @@ router.get('/historique-automates/all', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-*/
 
 router.get('/historique-reglage/all', async (req, res) => {
   try {

@@ -61,7 +61,7 @@
       <button id="profileButton" class="btn btn-info mb-3">Profil</button>
     
       <!-- Export Button -->
-      <button onclick="exporterSeuil()" class="btn btn-secondary mb-3">Exporter</button>
+      <button onclick="ExporterSeuilEtHistoriqueAutomate()" class="btn btn-secondary mb-3">Exporter</button>
     
       <!-- Navigation Buttons -->
       <a href="http://localhost:8080/Graphique_de_donnees.html" class="btn btn-secondary mb-3">Graphique</a>
@@ -467,6 +467,59 @@ function exporterSeuil() {
     })
     .catch(error => console.error('Erreur lors du téléchargement des données :', error));
 }
+
+function exporterHistoriqueAutomate() {
+  console.log('Exportation des données depuis HistoriqueAutomate...');
+  
+  // Récupérer toutes les données via l'API
+  fetch('http://localhost:5001/historique-automates/all')
+    .then(response => response.json())
+    .then(data => {
+      let csvContent = '';
+      // Définir l'en-tête du CSV en fonction des colonnes de la table HistoriqueAutomates
+      csvContent += 'ID_historique,ID_tableau,nom_machine,nom_automate,ip_automate,port_connexion,bibliotheque,numero_registre,taille_registre,type_donnees,etat_bit,date_heure_paris,date_enregistrement\n';
+      
+      // Parcourir chaque enregistrement et concaténer les données
+      data.forEach(row => {
+        const rowData = [
+          row.ID_historique,       // Identifiant unique dans HistoriqueAutomates
+          row.ID_tableau,          // Référence à l'automate
+          row.nom_machine,         // Nom de la machine
+          row.nom_automate,        // Nom de l'automate
+          row.ip_automate,         // Adresse IP de l'automate
+          row.port_connexion,      // Port de connexion
+          row.bibliotheque,        // Bibliothèque utilisée (Modbus-Serial ou Node7)
+          row.numero_registre,     // Numéro de registre utilisé
+          row.taille_registre,     // Taille du registre
+          row.type_donnees,        // Type de données (readCoils ou readHoldingRegisters)
+          row.etat_bit,            // Valeur lue
+          row.date_heure_paris,    // Date et heure locales enregistrées lors de la lecture (brute)
+          row.formatted_date       // Date d'enregistrement formatée (YYYY-MM-DD HH:MM:SS)
+        ];
+        csvContent += rowData.join(',') + '\n';
+      });
+
+      // Créer un objet Blob contenant les données CSV
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+      
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'HistoriqueAutomate.csv';
+
+      // Simuler un clic pour déclencher le téléchargement
+      link.click();
+    })
+    .catch(error => console.error('Erreur lors du téléchargement des données :', error));
+  }
+
+  function ExporterSeuilEtHistoriqueAutomate(){
+    exporterSeuil();
+    // Délai de 2 secondes pour laisser le temps au téléchargement du premier fichier de se lancer
+    setTimeout(() => {
+      exporterHistoriqueAutomate();
+    }, 2000);
+  }
   </script>
 </body>
 </html>

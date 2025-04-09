@@ -879,6 +879,25 @@ router.put('/reglages/:ID_tableau', async (req, res) => {
   }
 });
 
+router.put('/write-register/808', async (req, res) => {
+  const { value } = req.body; // attend 1 ou 0
+  const client = new ModbusRTU();
+  try {
+    // Remplacer IP et port par ceux du PLC cible
+    await client.connectTCP("172.16.1.24", { port: 502 });
+    client.setID(1);
+
+    // Écrire la valeur sur le registre 808
+    await client.writeRegister(808, parseInt(value));
+    client.close();
+    res.json({ message: `Valeur ${value} envoyée sur le registre 808 avec succès` });
+  } catch (error) {
+    console.error("Erreur lors de l'écriture sur le registre 808:", error.message);
+    res.status(500).json({ error: "Erreur lors de l'écriture sur le registre 808" });
+  }
+});
+
+
 // Export de toutes les valeurs
 router.get('/historique-automates/all', async (req, res) => {
   try {

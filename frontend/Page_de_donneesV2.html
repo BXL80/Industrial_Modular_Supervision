@@ -51,11 +51,6 @@
       </tbody>
     </table>
 
-    <!-- Bouton STOP -->
-    <div class="text-center mt-3">
-      <button id="stopUpdateButton" class="btn btn-danger">Arrêter la mise à jour</button>
-    </div>   
-
     <div class="d-flex justify-content-between mt-4">
       <!-- Trigger for Profile Modal -->
       <button id="profileButton" class="btn btn-info mb-3">Profil</button>
@@ -71,23 +66,23 @@
       <!-- Bouton Ajouter Ligne -->
       <button id="addRowButton" class="btn btn-success mb-3">Ajouter Ligne</button>
     </div>
-    <div>
-      <div class="text-center mt-4">
-        <button id="updateButton" class="btn btn-primary">Mettre à jour les données</button>
-      </div>      
-    </div>
+    <div class="d-flex flex-row align-items-center justify-content-center mt-4">
+      <button id="stopUpdateButton" class="btn btn-danger me-2">Arrêter la mise à jour</button>
+      <button id="updateButton" class="btn btn-primary me-2">Mettre à jour les données</button>
+      <h4 class="me-2 mb-0">Cycle Auto: <span id="cycle_auto">0</span></h4>
+      <div class="form-check mb-0">
+        <input class="form-check-input" type="checkbox" id="cycleAutoCheckbox">
+        <label class="form-check-label" for="cycleAutoCheckbox">
+          Activer Fonctionnement avec seuil
+        </label>
+      </div>
+    </div>    
     <div class="mt-4 d-flex align-items-center">
       <label for="intervalInput" class="me-2">Mise à jour automatique toutes les</label>
       <input type="number" id="intervalInput" class="form-control w-auto" value="1" min="1" style="width: 80px;">
       <span class="ms-2">secondes</span>
-    </div>
-    <div class="text-center mt-3">
       <button id="applyIntervalButton" class="btn btn-primary">Appliquer</button>
     </div>
-    <div class="text-center mt-3">
-      <h4>Cycle Auto: <span id="cycle_auto">0</span></h4>
-    </div>
-      
   </main>
 
   <!-- Modal for Profile -->
@@ -210,6 +205,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // Exemple de démarrage de l'auto-update avec un intervalle défini
   const intervalValue = parseInt(document.getElementById('intervalInput').value, 10);
   startAutoUpdate(intervalValue);
+
+  const cycleCheckbox = document.getElementById("cycleAutoCheckbox");
+
+  cycleCheckbox.addEventListener("change", function() {
+    const value = this.checked ? 1 : 0;
+    console.log(`La case est ${this.checked ? 'cochée (1)' : 'décochée (0)'}. Envoi de ${value} sur le registre 808...`);
+    
+    // Envoyer la valeur via une requête fetch à l'API dédiée
+    fetch('http://localhost:5001/write-register/808', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ value: value })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'envoi de la commande');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Réponse de l\'API:', data);
+    })
+    .catch(err => {
+      console.error('Erreur lors de la modification du registre 808:', err);
+    });
+  });
 
   // Bouton pour arrêter l'auto-update
   document.getElementById('stopUpdateButton').addEventListener('click', () => {

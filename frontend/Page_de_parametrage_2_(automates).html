@@ -39,6 +39,9 @@
     <canvas id="historiqueChart" width="800" height="400"></canvas>
   </div>
 
+  <!-- Message quand valeur hors seuil normal -->
+  <div id="alertContainer" class="container mt-3"></div>
+
   <!-- Form Section -->
   <main class="container">
     <form class="card shadow p-4" id="automateForm">
@@ -137,6 +140,13 @@
       //met à jour BDD
       startAutoUpdate(1);
 
+      // Fonction utilitaire pour afficher une alerte dans le conteneur "alertContainer"
+      function showAlert(message, type) {
+        // type peut être "warning", "danger", etc.
+        const alertContainer = document.getElementById('alertContainer');
+        alertContainer.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+      }
+
       function updateChart() {
         Promise.all([
           fetch('http://localhost:5001/historique-automates/all').then(res => res.json()),
@@ -148,32 +158,55 @@
             console.warn('Aucune donnée reçue pour le graphique');
             return;
           }
-          // Récupérer la configuration correspondante (pour "Temperature")
+          
+          // Récupérer la configuration pour "Temperature"
           const config = reglageData.find(item => item.nom_machine === 'Temperature');
-          // Si la configuration est trouvée, extrayez les seuils, sinon utiliser des valeurs par défaut.
+          // Si la configuration est trouvée, utiliser ses seuils, sinon des valeurs par défaut.
           const vMin    = config && config.valeur_min ? parseFloat(config.valeur_min) : 19;
           const vMax    = config && config.valeur_max ? parseFloat(config.valeur_max) : 21;
           const vMinTB  = config && config.valeur_min_tres_bas ? parseFloat(config.valeur_min_tres_bas) : 14;
           const vMaxTH  = config && config.valeur_max_tres_haut ? parseFloat(config.valeur_max_tres_haut) : 46;
           
-          // On prend le point le plus récent (supposé être le premier élément, si trié par date décroissante)
+          // Prenez le point le plus récent (supposé être le premier élément si trié par date décroissante)
           const latestPoint = temperatureData[0];
           const newValue = parseFloat(latestPoint.etat_bit);
           const newLabel = latestPoint.formatted_date;
           
+          // Gestion de l'affichage de l'alerte selon la valeur
+          if (newValue < vMin) {
+            if (newValue >= vMinTB) {
+              // Entre seuil absolu bas et seuil minimal
+              showAlert(`Attention : La valeur (${newValue}) est en dessous du seuil normal (entre ${vMinTB} et ${vMin}).`, "warning");
+            } else {
+              // En dessous de la limite absolue
+              showAlert(`ALERTE CRITIQUE : La valeur (${newValue}) est inférieure à la limite absolue minimale (${vMinTB}).`, "danger");
+            }
+          } else if (newValue > vMax) {
+            if (newValue <= vMaxTH) {
+              // Entre seuil maximal et seuil absolu haut
+              showAlert(`Attention : La valeur (${newValue}) est au-dessus du seuil normal (entre ${vMax} et ${vMaxTH}).`, "warning");
+            } else {
+              // Au-dessus de la limite absolue
+              showAlert(`ALERTE CRITIQUE : La valeur (${newValue}) dépasse la limite absolue maximale (${vMaxTH}).`, "danger");
+            }
+          } else {
+            // Valeur normale, effacer les alertes
+            document.getElementById('alertContainer').innerHTML = "";
+          }
+          
           if (window.historiqueChartInstance) {
-            // Mise à jour incrémentale : si le dernier point du graphique n'est pas le nouveau...
             const currentLabels = window.historiqueChartInstance.data.labels;
+            // On vérifie si le dernier point n'est pas déjà ce nouveau label
             if (currentLabels.length === 0 || currentLabels[currentLabels.length - 1] !== newLabel) {
               window.historiqueChartInstance.data.labels.push(newLabel);
               window.historiqueChartInstance.data.datasets[0].data.push(newValue);
-              // Limiter le nombre de points (ici 50)
+              // Limiter le nombre de points affichés (par exemple à 50)
               const maxPoints = 50;
               if (window.historiqueChartInstance.data.labels.length > maxPoints) {
                 window.historiqueChartInstance.data.labels.shift();
                 window.historiqueChartInstance.data.datasets[0].data.shift();
               }
-              // Mettre à jour les zones d'annotation si elles existent
+              // Mise à jour dynamique des annotations
               if (window.historiqueChartInstance.options.plugins.annotation) {
                 window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMin = vMinTB;
                 window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMax = vMin;
@@ -183,7 +216,7 @@
               window.historiqueChartInstance.update();
             }
           } else {
-            // Création initiale du graphique avec les annotations dynamiques
+            // Création initiale du graphique
             const ctx = document.getElementById('historiqueChart').getContext('2d');
             window.historiqueChartInstance = new Chart(ctx, {
               type: 'line',
@@ -232,8 +265,8 @@
                         type: 'box',
                         xScaleID: 'x',
                         yScaleID: 'y',
-                        yMin: vMinTB,     // seuil bas absolu
-                        yMax: vMin,       // seuil min
+                        yMin: vMinTB,
+                        yMax: vMin,
                         backgroundColor: 'rgba(0, 0, 255, 0.2)',
                         borderWidth: 0
                       },
@@ -241,8 +274,8 @@
                         type: 'box',
                         xScaleID: 'x',
                         yScaleID: 'y',
-                        yMin: vMax,       // seuil max
-                        yMax: vMaxTH,     // seuil haut absolu
+                        yMin: vMax,
+                        yMax: vMaxTH,
                         backgroundColor: 'rgba(255, 0, 0, 0.2)',
                         borderWidth: 0
                       }
@@ -254,6 +287,7 @@
           }
         }).catch(error => console.error('Erreur lors de la récupération combinée des données du graphique :', error));
       }
+
       // Met à jour le graphique toutes les 5 secondes
       setInterval(updateChart, 5000);
       updateChart();

@@ -879,6 +879,7 @@ router.put('/reglages/:ID_tableau', async (req, res) => {
   }
 });
 
+//Ecriture du mot permet de contrôler l'utilisation ou non de fonctionnement avec le seuil
 router.put('/write-register/808', async (req, res) => {
   const { value } = req.body; // attend 1 ou 0
   const client = new ModbusRTU();
@@ -896,7 +897,6 @@ router.put('/write-register/808', async (req, res) => {
     res.status(500).json({ error: "Erreur lors de l'écriture sur le registre 808" });
   }
 });
-
 
 // Export de toutes les valeurs
 router.get('/historique-automates/all', async (req, res) => {

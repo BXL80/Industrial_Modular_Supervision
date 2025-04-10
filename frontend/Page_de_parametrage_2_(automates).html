@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0"></script>
   <link rel="icon" href="img/logo.jpg" />
 </head>
 <body class="bg-light">
@@ -133,97 +134,126 @@
             .catch(error => console.error('Error during auto-update:', error));
         }, intervalValue * 1000);
       }
-            //met à jour BDD
-            startAutoUpdate(1);
+      //met à jour BDD
+      startAutoUpdate(1);
 
       function updateChart() {
-        fetch('http://localhost:5001/historique-automates/all')
-          .then(response => response.json())
-          .then(histData => {
-            // Filtrer uniquement les enregistrements de la machine "Temperature"
-            const temperatureData = histData.filter(item => item.nom_machine === 'Temperature');
-            if (!temperatureData || temperatureData.length === 0) {
-              console.warn('Aucune donnée reçue pour le graphique');
-              return;
-            }
-            // Prenez le point le plus récent (ici, en supposant que la liste est triée par date décroissante)
-            const latestPoint = temperatureData[0];
-            // Convertir la valeur et s'assurer du bon type (par exemple, "20.80" -> 20.80)
-            const newValue = parseFloat(latestPoint.etat_bit);
-            // Notez : assurez-vous que formatted_date est au format "yyyy-MM-dd HH:mm:ss"
-            const newLabel = latestPoint.formatted_date;
-            
-            if (window.historiqueChartInstance) {
-              // S'il existe déjà un graphique, on ajoute le point s'il est nouveau
-              const currentLabels = window.historiqueChartInstance.data.labels;
-              if (currentLabels.length === 0 || currentLabels[currentLabels.length - 1] !== newLabel) {
-                window.historiqueChartInstance.data.labels.push(newLabel);
-                window.historiqueChartInstance.data.datasets[0].data.push(newValue);
-                // Par exemple, conserver un maximum de 50 points
-                const maxPoints = 50;
-                if (window.historiqueChartInstance.data.labels.length > maxPoints) {
-                  window.historiqueChartInstance.data.labels.shift();
-                  window.historiqueChartInstance.data.datasets[0].data.shift();
-                }
-                window.historiqueChartInstance.update();
+        Promise.all([
+          fetch('http://localhost:5001/historique-automates/all').then(res => res.json()),
+          fetch('http://localhost:5001/automates-reglages').then(res => res.json())
+        ]).then(([histData, reglageData]) => {
+          // Filtrer uniquement les enregistrements de la machine "Temperature"
+          const temperatureData = histData.filter(item => item.nom_machine === 'Temperature');
+          if (!temperatureData || temperatureData.length === 0) {
+            console.warn('Aucune donnée reçue pour le graphique');
+            return;
+          }
+          // Récupérer la configuration correspondante (pour "Temperature")
+          const config = reglageData.find(item => item.nom_machine === 'Temperature');
+          // Si la configuration est trouvée, extrayez les seuils, sinon utiliser des valeurs par défaut.
+          const vMin    = config && config.valeur_min ? parseFloat(config.valeur_min) : 19;
+          const vMax    = config && config.valeur_max ? parseFloat(config.valeur_max) : 21;
+          const vMinTB  = config && config.valeur_min_tres_bas ? parseFloat(config.valeur_min_tres_bas) : 14;
+          const vMaxTH  = config && config.valeur_max_tres_haut ? parseFloat(config.valeur_max_tres_haut) : 46;
+          
+          // On prend le point le plus récent (supposé être le premier élément, si trié par date décroissante)
+          const latestPoint = temperatureData[0];
+          const newValue = parseFloat(latestPoint.etat_bit);
+          const newLabel = latestPoint.formatted_date;
+          
+          if (window.historiqueChartInstance) {
+            // Mise à jour incrémentale : si le dernier point du graphique n'est pas le nouveau...
+            const currentLabels = window.historiqueChartInstance.data.labels;
+            if (currentLabels.length === 0 || currentLabels[currentLabels.length - 1] !== newLabel) {
+              window.historiqueChartInstance.data.labels.push(newLabel);
+              window.historiqueChartInstance.data.datasets[0].data.push(newValue);
+              // Limiter le nombre de points (ici 50)
+              const maxPoints = 50;
+              if (window.historiqueChartInstance.data.labels.length > maxPoints) {
+                window.historiqueChartInstance.data.labels.shift();
+                window.historiqueChartInstance.data.datasets[0].data.shift();
               }
-            } else {
-              // Création initiale du graphique
-              const ctx = document.getElementById('historiqueChart').getContext('2d');
-              window.historiqueChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                  labels: [newLabel],
-                  datasets: [{
-                    label: 'Etat Bit (Temperature)',
-                    data: [newValue],
-                    borderColor: 'blue',
-                    fill: false,
-                    tension: 0.1
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  scales: {
-                    x: {
-                      type: 'time',
-                      time: {
-                        // Utilisez les tokens de date-fns :
-                        // - Année : yyyy
-                        // - Mois : MM
-                        // - Jour : dd (ou d pour un jour sans zéro en début, ici nous utilisons d dans displayFormats)
-                        // - Heure : HH, Minute : mm, Seconde : ss
-                        parser: 'yyyy-MM-dd HH:mm:ss',
-                        tooltipFormat: 'PP HH:mm',
-                        displayFormats: {
-                          hour: 'MMM d, H:mm' // Remplacez D par d pour les jours
-                        }
-                      },
-                      title: {
-                        display: true,
-                        text: 'Date et Heure'
+              // Mettre à jour les zones d'annotation si elles existent
+              if (window.historiqueChartInstance.options.plugins.annotation) {
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMin = vMinTB;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMax = vMin;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMax.yMin = vMax;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMax.yMax = vMaxTH;
+              }
+              window.historiqueChartInstance.update();
+            }
+          } else {
+            // Création initiale du graphique avec les annotations dynamiques
+            const ctx = document.getElementById('historiqueChart').getContext('2d');
+            window.historiqueChartInstance = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: [newLabel],
+                datasets: [{
+                  label: 'Etat Bit (Temperature)',
+                  data: [newValue],
+                  borderColor: 'blue',
+                  fill: false,
+                  tension: 0.1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  x: {
+                    type: 'time',
+                    time: {
+                      parser: 'yyyy-MM-dd HH:mm:ss',
+                      tooltipFormat: 'PP HH:mm',
+                      displayFormats: {
+                        hour: 'MMM d, H:mm'
                       }
                     },
-                    y: {
-                      title: {
-                        display: true,
-                        text: 'Etat Bit'
-                      }
+                    title: {
+                      display: true,
+                      text: 'Date et Heure'
                     }
                   },
-                  plugins: {
-                    legend: {
+                  y: {
+                    title: {
                       display: true,
-                      position: 'bottom'
+                      text: 'Etat Bit'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: 'bottom'
+                  },
+                  annotation: {
+                    annotations: {
+                      zoneMin: {
+                        type: 'box',
+                        xScaleID: 'x',
+                        yScaleID: 'y',
+                        yMin: vMinTB,     // seuil bas absolu
+                        yMax: vMin,       // seuil min
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        borderWidth: 0
+                      },
+                      zoneMax: {
+                        type: 'box',
+                        xScaleID: 'x',
+                        yScaleID: 'y',
+                        yMin: vMax,       // seuil max
+                        yMax: vMaxTH,     // seuil haut absolu
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        borderWidth: 0
+                      }
                     }
                   }
                 }
-              });
-            }
-          })
-          .catch(error => console.error('Erreur lors de la récupération des données du graphique (incrémental) :', error));
+              }
+            });
+          }
+        }).catch(error => console.error('Erreur lors de la récupération combinée des données du graphique :', error));
       }
-
       // Met à jour le graphique toutes les 5 secondes
       setInterval(updateChart, 5000);
       updateChart();

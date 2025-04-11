@@ -59,7 +59,6 @@
       <button onclick="ExporterSeuilEtHistoriqueAutomate()" class="btn btn-secondary mb-3">Exporter</button>
     
       <!-- Navigation Buttons -->
-      <a href="http://localhost:8080/Graphique_de_donnees.html" class="btn btn-secondary mb-3">Graphique</a>
       <a href="http://localhost:8080/Page_de_parametrage_2_(automates).html" class="btn btn-secondary mb-3">Plus de parametres</a>
       <a href="http://localhost:8080/defauts.html" class="btn btn-warning btn-lg mb-3">Historique Défauts</a>
       
@@ -536,11 +535,53 @@ function exporterHistoriqueAutomate() {
     .catch(error => console.error('Erreur lors du téléchargement des données :', error));
   }
 
+function exporterAlarmes() {
+  console.log('Exportation des données depuis Alarmes...');
+  
+  // Récupérer toutes les données via l'API
+  fetch('http://localhost:5001/alarmes/all')
+    .then(response => response.json())
+    .then(data => {
+      let csvContent = '';
+      // Définir l'en-tête du CSV en fonction des colonnes de la table Alarmes
+      csvContent += 'ID_alarme,type_alarme,niveau,temperature,date_heure_alarmes\n';
+      
+      // Parcourir chaque enregistrement et concaténer les données
+      data.forEach(row => {
+        // On utilise la date formatée (formatted_date) qui provient du backend
+        const rowData = [
+          row.ID_alarme,
+          row.type_alarme,
+          row.niveau,
+          row.temperature,
+          row.formatted_date // affichage au format 'YYYY-MM-DD HH:MM:SS'
+        ];
+        csvContent += rowData.join(',') + '\n';
+      });
+
+      // Créer un blob CSV
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+      
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'alarmes.csv';
+
+      // Simuler un clic pour déclencher le téléchargement
+      link.click();
+    })
+    .catch(error => console.error('Erreur lors du téléchargement des données :', error));
+}
+
+
   function ExporterSeuilEtHistoriqueAutomate(){
     exporterSeuil();
     // Délai de 2 secondes pour laisser le temps au téléchargement du premier fichier de se lancer
     setTimeout(() => {
       exporterHistoriqueAutomate();
+    }, 2000);
+    setTimeout(() => {
+      exporterAlarmes();
     }, 2000);
   }
   </script>

@@ -930,6 +930,21 @@ router.get('/historique-reglage/all', async (req, res) => {
   }
 });
 
+router.get('/alarmes/all', async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const historique = await conn.query(`
+      SELECT *, 
+             DATE_FORMAT(date_heure_alarmes, '%Y-%m-%d %H:%i:%s') AS formatted_date
+      FROM Alarmes
+      ORDER BY date_heure_alarmes DESC
+    `);
+    conn.release();
+    res.json(historique);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 router.put('/config', async (req, res) => {
   try {

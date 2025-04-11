@@ -147,6 +147,7 @@
         alertContainer.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
       }
 
+      /*
       function updateChart() {
         Promise.all([
           fetch('http://localhost:5001/historique-automates/all').then(res => res.json()),
@@ -287,9 +288,361 @@
           }
         }).catch(error => console.error('Erreur lors de la récupération combinée des données du graphique :', error));
       }
+      */
 
-      // Met à jour le graphique toutes les 5 secondes
-      setInterval(updateChart, 5000);
+      //Mise à jour du graphique avec prise en compte du prédictif de la température à  secondes
+      /*
+      function updateChart() {
+        Promise.all([
+          fetch('http://localhost:5001/historique-automates/all').then(res => res.json()),
+          fetch('http://localhost:5001/automates-reglages').then(res => res.json())
+        ]).then(([histData, reglageData]) => {
+          // Filtrer uniquement les enregistrements de la machine "Temperature"
+          const temperatureData = histData.filter(item => item.nom_machine === 'Temperature');
+          if (!temperatureData || temperatureData.length === 0) {
+            console.warn('Aucune donnée reçue pour le graphique');
+            return;
+          }
+          
+          // Récupérer la configuration pour "Temperature"
+          const config = reglageData.find(item => item.nom_machine === 'Temperature');
+          // Utiliser les valeurs de seuil issues des réglages (ou valeurs par défaut)
+          const vMin    = config && config.valeur_min ? parseFloat(config.valeur_min) : 19;
+          const vMax    = config && config.valeur_max ? parseFloat(config.valeur_max) : 21;
+          const vMinTB  = config && config.valeur_min_tres_bas ? parseFloat(config.valeur_min_tres_bas) : 14;
+          const vMaxTH  = config && config.valeur_max_tres_haut ? parseFloat(config.valeur_max_tres_haut) : 46;
+          
+          // Extraire le point le plus récent (supposé être le premier élément si trié par date décroissante)
+          const latestPoint = temperatureData[0];
+          const newValue = parseFloat(latestPoint.etat_bit);
+          const newLabel = latestPoint.formatted_date; // Format : "yyyy-MM-dd HH:mm:ss"
+
+          // Détermination de l'alerte "d'état" basée sur la valeur courante
+          let currentAlert = "";
+          if (newValue < vMin) {
+            if (newValue >= vMinTB) {
+              currentAlert = `<div class="alert alert-warning" role="alert">Attention : La valeur (${newValue}) est en dessous du seuil normal (entre ${vMinTB} et ${vMin}).</div>`;
+            } else {
+              currentAlert = `<div class="alert alert-danger" role="alert">ALERTE CRITIQUE : La valeur (${newValue}) est inférieure à la limite absolue minimale (${vMinTB}).</div>`;
+            }
+          } else if (newValue > vMax) {
+            if (newValue <= vMaxTH) {
+              currentAlert = `<div class="alert alert-warning" role="alert">Attention : La valeur (${newValue}) est au-dessus du seuil normal (entre ${vMax} et ${vMaxTH}).</div>`;
+            } else {
+              currentAlert = `<div class="alert alert-danger" role="alert">ALERTE CRITIQUE : La valeur (${newValue}) dépasse la limite absolue maximale (${vMaxTH}).</div>`;
+            }
+          }
+          
+          // Calcul prédictif basé sur la moyenne des 10 derniers points
+          let predictiveAlert = "";
+          if (window.historiqueChartInstance && window.historiqueChartInstance.data.datasets[0].data.length >= 10) {
+            // Récupérer les 10 derniers points
+            const dataPoints = window.historiqueChartInstance.data.datasets[0].data.slice(-10);
+            const labelsPoints = window.historiqueChartInstance.data.labels.slice(-10);
+            
+            // Calculer la moyenne des taux (pentes) entre chaque paire consécutive
+            let slopeSum = 0;
+            let count = 0;
+            for (let i = 0; i < dataPoints.length - 1; i++) {
+              const valueDiff = parseFloat(dataPoints[i+1]) - parseFloat(dataPoints[i]);
+              const timeDiff = (new Date(labelsPoints[i+1]).getTime() - new Date(labelsPoints[i]).getTime()) / 1000;
+              if (timeDiff > 0) {
+                slopeSum += valueDiff / timeDiff;
+                count++;
+              }
+            }
+            if (count > 0) {
+              const avgSlope = slopeSum / count; // moyenne de l'évolution (unités par seconde)
+              const predictedValue = newValue + avgSlope * 10; // prédiction dans 10 secondes
+              if (predictedValue > vMaxTH) {
+                predictiveAlert = `<div class="alert alert-danger" role="alert">Prédiction CRITIQUE : Dans 10 secondes, la valeur risque de dépasser la limite absolue maximale (${vMaxTH}) (Prédiction: ${predictedValue.toFixed(2)}).</div>`;
+              } else if (predictedValue < vMinTB) {
+                predictiveAlert = `<div class="alert alert-danger" role="alert">Prédiction CRITIQUE : Dans 10 secondes, la valeur risque de tomber en dessous de la limite absolue minimale (${vMinTB}) (Prédiction: ${predictedValue.toFixed(2)}).</div>`;
+              }
+            }
+          }
+          
+          // Afficher les alertes combinées dans le conteneur "alertContainer"
+          document.getElementById('alertContainer').innerHTML = currentAlert + predictiveAlert;
+          
+          // Mise à jour incrémentale du graphique
+          if (window.historiqueChartInstance) {
+            const currentLabels = window.historiqueChartInstance.data.labels;
+            if (currentLabels.length === 0 || currentLabels[currentLabels.length - 1] !== newLabel) {
+              window.historiqueChartInstance.data.labels.push(newLabel);
+              window.historiqueChartInstance.data.datasets[0].data.push(newValue);
+              // Limiter le nombre de points affichés (par exemple à 50)
+              const maxPoints = 50;
+              if (window.historiqueChartInstance.data.labels.length > maxPoints) {
+                window.historiqueChartInstance.data.labels.shift();
+                window.historiqueChartInstance.data.datasets[0].data.shift();
+              }
+              // Mise à jour dynamique des annotations avec les seuils
+              if (window.historiqueChartInstance.options.plugins.annotation) {
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMin = vMinTB;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMax = vMin;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMax.yMin = vMax;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMax.yMax = vMaxTH;
+              }
+              window.historiqueChartInstance.update();
+            }
+          } else {
+            // Création initiale du graphique avec les annotations dynamiques
+            const ctx = document.getElementById('historiqueChart').getContext('2d');
+            window.historiqueChartInstance = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: [newLabel],
+                datasets: [{
+                  label: 'Etat Bit (Temperature) en degres C',
+                  data: [newValue],
+                  borderColor: 'blue',
+                  fill: false,
+                  tension: 0.1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  x: {
+                    type: 'time',
+                    time: {
+                      parser: 'yyyy-MM-dd HH:mm:ss',
+                      tooltipFormat: 'PP HH:mm',
+                      displayFormats: {
+                        hour: 'MMM d, H:mm'
+                      }
+                    },
+                    title: {
+                      display: true,
+                      text: 'Date et Heure'
+                    }
+                  },
+                  y: {
+                    title: {
+                      display: true,
+                      text: 'Temperature en degres'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: 'bottom'
+                  },
+                  annotation: {
+                    annotations: {
+                      zoneMin: {
+                        type: 'box',
+                        xScaleID: 'x',
+                        yScaleID: 'y',
+                        yMin: vMinTB,
+                        yMax: vMin,
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        borderWidth: 0
+                      },
+                      zoneMax: {
+                        type: 'box',
+                        xScaleID: 'x',
+                        yScaleID: 'y',
+                        yMin: vMax,
+                        yMax: vMaxTH,
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        borderWidth: 0
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          }
+        }).catch(error => console.error('Erreur lors de la récupération combinée des données du graphique :', error));
+      }
+      */
+
+      //Mise à jour du graphique avec prise en compte du prédictif du temps avant dépassement
+      function updateChart() {
+        Promise.all([
+          fetch('http://localhost:5001/historique-automates/all').then(res => res.json()),
+          fetch('http://localhost:5001/automates-reglages').then(res => res.json())
+        ]).then(([histData, reglageData]) => {
+          // Filtrer pour la machine "Temperature"
+          const temperatureData = histData.filter(item => item.nom_machine === 'Temperature');
+          if (!temperatureData || temperatureData.length === 0) {
+            console.warn('Aucune donnée reçue pour le graphique');
+            return;
+          }
+          
+          // Récupérer la configuration pour "Temperature"
+          const config = reglageData.find(item => item.nom_machine === 'Temperature');
+          const vMin   = config && config.valeur_min ? parseFloat(config.valeur_min) : 19;
+          const vMax   = config && config.valeur_max ? parseFloat(config.valeur_max) : 21;
+          const vMinTB = config && config.valeur_min_tres_bas ? parseFloat(config.valeur_min_tres_bas) : 14;
+          const vMaxTH = config && config.valeur_max_tres_haut ? parseFloat(config.valeur_max_tres_haut) : 46;
+          
+          // Extraire le point le plus récent
+          const latestPoint = temperatureData[0];
+          const newValue = parseFloat(latestPoint.etat_bit);
+          const newLabel = latestPoint.formatted_date; // "yyyy-MM-dd HH:mm:ss"
+          
+          // Alerte d'état basée sur la valeur actuelle
+          let currentAlert = "";
+          if (newValue < vMin) {
+            if (newValue >= vMinTB) {
+              currentAlert = `<div class="alert alert-warning" role="alert">Attention : La valeur (${newValue}) est en dessous du seuil normal (entre ${vMinTB} et ${vMin}).</div>`;
+            } else {
+              currentAlert = `<div class="alert alert-danger" role="alert">ALERTE CRITIQUE : La valeur (${newValue}) est inférieure à la limite absolue minimale (${vMinTB}).</div>`;
+            }
+          } else if (newValue > vMax) {
+            if (newValue <= vMaxTH) {
+              currentAlert = `<div class="alert alert-warning" role="alert">Attention : La valeur (${newValue}) est au-dessus du seuil normal (entre ${vMax} et ${vMaxTH}).</div>`;
+            } else {
+              currentAlert = `<div class="alert alert-danger" role="alert">ALERTE CRITIQUE : La valeur (${newValue}) dépasse la limite absolue maximale (${vMaxTH}).</div>`;
+            }
+          }
+          
+          // Prédiction par moindres carrés sur les 10 derniers points
+          let predictiveAlert = "";
+          //Extraction des 10 derniers points
+          if (window.historiqueChartInstance && window.historiqueChartInstance.data.datasets[0].data.length >= 10) {
+            const dataPoints = window.historiqueChartInstance.data.datasets[0].data.slice(-10);
+            const labelsPoints = window.historiqueChartInstance.data.labels.slice(-10);
+            
+            // Convertir les timestamps en secondes
+            const x = labelsPoints.map(label => new Date(label).getTime() / 1000);
+            const y = dataPoints.map(val => parseFloat(val));
+            const N = x.length;
+            
+            // Calculs pour la régression linéaire par les moindres carrés
+            const sumX = x.reduce((a, b) => a + b, 0);
+            const sumY = y.reduce((a, b) => a + b, 0);
+            const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+            const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+            
+            const denominator = N * sumX2 - sumX * sumX;
+            // Éviter une division par zéro
+            if (denominator !== 0) {
+              const slope = (N * sumXY - sumX * sumY) / denominator;
+              const intercept = (sumY - slope * sumX) / N;
+              
+              // Prédiction uniquement si:
+              // - Pour zone basse : newValue < vMin && newValue > vMinTB et slope négative
+              // - Pour zone haute : newValue > vMax && newValue < vMaxTH et slope positive
+              const xLast = x[x.length - 1]; // Temps en secondes du dernier point
+              if (newValue < vMin && newValue > vMinTB && slope < 0) {
+                // Calculer le temps auquel y = vMinTB
+                const predictedTimeSec = (vMinTB - intercept) / slope;
+                const deltaTime = predictedTimeSec - xLast;
+                if (deltaTime > 0) {
+                  predictiveAlert += `<div class="alert alert-info" role="alert">Prédiction : Dans ${deltaTime.toFixed(1)} secondes, la valeur devrait atteindre le seuil très bas (${vMinTB}).</div>`;
+                }
+              }
+              if (newValue > vMax && newValue < vMaxTH && slope > 0) {
+                const predictedTimeSec = (vMaxTH - intercept) / slope;
+                const deltaTime = predictedTimeSec - xLast;
+                if (deltaTime > 0) {
+                  predictiveAlert += `<div class="alert alert-info" role="alert">Prédiction : Dans ${deltaTime.toFixed(1)} secondes, la valeur devrait atteindre le seuil très haut (${vMaxTH}).</div>`;
+                }
+              }
+            }
+          }
+          
+          // Affichage combiné des alertes
+          document.getElementById('alertContainer').innerHTML = currentAlert + predictiveAlert;
+          
+          // Mise à jour incrémentale du graphique
+          if (window.historiqueChartInstance) {
+            const currentLabels = window.historiqueChartInstance.data.labels;
+            if (currentLabels.length === 0 || currentLabels[currentLabels.length - 1] !== newLabel) {
+              window.historiqueChartInstance.data.labels.push(newLabel);
+              window.historiqueChartInstance.data.datasets[0].data.push(newValue);
+              const maxPoints = 50;
+              if (window.historiqueChartInstance.data.labels.length > maxPoints) {
+                window.historiqueChartInstance.data.labels.shift();
+                window.historiqueChartInstance.data.datasets[0].data.shift();
+              }
+              // Mise à jour des annotations (zones colorées)
+              if (window.historiqueChartInstance.options.plugins.annotation) {
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMin = vMinTB;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMin.yMax = vMin;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMax.yMin = vMax;
+                window.historiqueChartInstance.options.plugins.annotation.annotations.zoneMax.yMax = vMaxTH;
+              }
+              window.historiqueChartInstance.update();
+            }
+          } else {
+            const ctx = document.getElementById('historiqueChart').getContext('2d');
+            window.historiqueChartInstance = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: [newLabel],
+                datasets: [{
+                  label: 'Etat Bit (Temperature) en °C',
+                  data: [newValue],
+                  borderColor: 'blue',
+                  fill: false,
+                  tension: 0.1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  x: {
+                    type: 'time',
+                    time: {
+                      parser: 'yyyy-MM-dd HH:mm:ss',
+                      tooltipFormat: 'PP HH:mm',
+                      displayFormats: {
+                        hour: 'MMM d, H:mm'
+                      }
+                    },
+                    title: {
+                      display: true,
+                      text: 'Date et Heure'
+                    }
+                  },
+                  y: {
+                    title: {
+                      display: true,
+                      text: 'Température en °C'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: 'bottom'
+                  },
+                  annotation: {
+                    annotations: {
+                      zoneMin: {
+                        type: 'box',
+                        xScaleID: 'x',
+                        yScaleID: 'y',
+                        yMin: vMinTB,
+                        yMax: vMin,
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        borderWidth: 0
+                      },
+                      zoneMax: {
+                        type: 'box',
+                        xScaleID: 'x',
+                        yScaleID: 'y',
+                        yMin: vMax,
+                        yMax: vMaxTH,
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        borderWidth: 0
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          }
+        }).catch(error => console.error('Erreur lors de la récupération combinée des données du graphique :', error));
+      }
+      // Met à jour le graphique toutes les 1 secondes
+      setInterval(updateChart, 1000);
       updateChart();
   
       // Save settings
